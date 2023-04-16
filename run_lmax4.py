@@ -1,20 +1,20 @@
 from pathlib import Path
 import classes as cfg
 from src import (
-    spectra_prod,
-    compute_I,
-    compute_window,
-    sims_production,
-    compute_S,
-    save_cumulative_S,
+    compute_S_estimators,
+    compute_legendre_integrals,
+    compute_legendre_polynomials,
+    compute_window_function,
+    plot_S_histograms,
+    plot_angular_correlation_function,
+    plot_cumulative_S_estimator,
+    plot_cumulative_significance,
+    plot_optimal_angular_ranges,
+    save_cumulative_S_estimators,
+    simulations_production,
     save_optimal,
-    compute_Legendre,
     save_significance,
-    plot_ang_corr,
-    plot_S_hist,
-    plot_optimal,
-    plot_cumulative_S,
-    plot_cumulative_signi,
+    spectra_production,
 )
 
 
@@ -33,27 +33,27 @@ def main(
 
     if not CurrentSettings.CLS_file.exists():
         print("\n**************** PRODUCING SPECTRA ***************")
-        spectra_prod.main(CurrentSettings)
+        spectra_production.main(CurrentSettings)
     if not CurrentSettings.I_file.exists():
         print("\n********** PRODUCING LEGENDRE INTEGRALS **********")
-        compute_I.main(CurrentSettings)
+        compute_legendre_integrals.main(CurrentSettings)
 
     CurrentState = cfg.State(CurrentSettings)
 
     if not CurrentState.settings.P_file.exists():
         print("\n********* PRODUCING LEGENDRE POLYNOMIALS *********")
-        compute_Legendre.main(CurrentState)
+        compute_legendre_polynomials.main(CurrentState)
     if not CurrentState.window_file.exists():
         print("\n*********** PRODUCING WINDOW FUNCTIONS ***********")
-        compute_window.main(CurrentState)
+        compute_window_function.main(CurrentState)
 
     if do_simulations:
         print("\n************** PRODUCING SIMULATIONS *************")
-        sims_production.main(CurrentState)
+        simulations_production.main(CurrentState)
         print("\n************* COMPUTING S ESTIMATORS *************")
-        compute_S.main(CurrentState)
+        compute_S_estimators.main(CurrentState)
         print("\n******** COMPUTING CUMULATIVE S ESTIMATORS *******")
-        save_cumulative_S.main(CurrentState)
+        save_cumulative_S_estimators.main(CurrentState)
     print("\n********** SAVING OPTIMAL ANGULAR RANGES *********")
     save_optimal.main(CurrentState)
     print("\n************** SAVING SIGNIFICANCES **************")
@@ -61,15 +61,15 @@ def main(
 
     if CurrentSettings.show or CurrentSettings.savefig:
         print("\n***** PLOTTING 2-POINT CORRELATION FUNCTIONS *****")
-        plot_ang_corr.main(CurrentState)
+        plot_angular_correlation_function.main(CurrentState)
         print("\n******** PLOTTING S ESTIMATORS HISTOGRAMS ********")
-        plot_S_hist.main(CurrentState)
+        plot_S_histograms.main(CurrentState)
         print("\n********* PLOTTING OPTIMAL ANGULAR RANGES ********")
-        plot_optimal.main(CurrentState)
+        plot_optimal_angular_ranges.main(CurrentState)
         print("\n******** PLOTTING CUMULATIVE S ESTIMATORS ********")
-        plot_cumulative_S.main(CurrentState)
+        plot_cumulative_S_estimator.main(CurrentState)
         print("\n************* PLOTTING SIGNIFICANCES *************")
-        plot_cumulative_signi.main(CurrentState)
+        plot_cumulative_significance.main(CurrentState)
     return
 
 

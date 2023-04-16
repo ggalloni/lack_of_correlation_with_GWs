@@ -1,21 +1,6 @@
-import numpy as np
-
-import pickle
-import scipy.special as ss
-from progressbar import (
-    AnimatedMarker,
-    Bar,
-    ETA,
-    FileTransferSpeed,
-    Percentage,
-    AdaptiveETA,
-    ProgressBar,
-    RotatingMarker,
-)
-import pymaster as nmt
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
+import numpy as np
+import scipy.special as ss
 from classes import State
 from tqdm import tqdm
 
@@ -139,5 +124,6 @@ def main(CurrentState: State):
     if show:
         plt.show()
 
-    print("\nDone! Puff...")
-    # ----------------------------------------------------- #
+
+if __name__ == "__main__":
+    main()
