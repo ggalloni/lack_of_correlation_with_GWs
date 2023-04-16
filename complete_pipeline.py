@@ -5,15 +5,15 @@ from src import make_tables
 
 
 def main():
-    run_everything = False
-    savefig = False
+    run_everything = True
+    savefig = True
     show = False
     debug = False
     batch = "testing"
     N = 100
 
     if run_everything:
-        do_simulations = False
+        do_simulations = True
 
         print("\n***************** RUNNING LMAX = 4 PIPELINE *****************")
         run_lmax4.main(
