@@ -11,7 +11,7 @@ from src import (
     plot_optimal_angular_ranges,
     save_cumulative_S_estimators,
     simulations_production,
-    save_optimal,
+    save_optimal_angular_ranges,
     save_significance,
     spectra_production,
 )
@@ -60,7 +60,7 @@ def main(
         print("\n******** COMPUTING CUMULATIVE S ESTIMATORS *******")
         save_cumulative_S_estimators.main(CurrentState)
         print("\n********** SAVING OPTIMAL ANGULAR RANGES *********")
-        save_optimal.main(CurrentState)
+        save_optimal_angular_ranges.main(CurrentState)
         print("\n************** SAVING SIGNIFICANCES **************")
         save_significance.main(CurrentState)
 

@@ -2,9 +2,9 @@
 
 \begin{tabular}{rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
 \toprule
-   $\ell_{\rm max} = 4$ &  $123^\circ$ &  $154^\circ$ &  $65^\circ$ &   $99^\circ$ &  $122^\circ$ &  $156^\circ$ &  $81^\circ$ &   $94^\circ$ &  $124^\circ$ &  $154^\circ$ \\
-   $\ell_{\rm max} = 6$ &   $58^\circ$ &  $117^\circ$ &  $71^\circ$ &  $117^\circ$ &   $71^\circ$ &  $123^\circ$ &  $69^\circ$ &  $114^\circ$ &   $71^\circ$ &  $123^\circ$ \\
-  $\ell_{\rm max} = 10$ &   $28^\circ$ &  $128^\circ$ &  $67^\circ$ &  $123^\circ$ &   $57^\circ$ &   $86^\circ$ &  $65^\circ$ &  $134^\circ$ &   $24^\circ$ &   $91^\circ$ \\
+   $\ell_{\rm max} = 4$ &  $134^\circ$ &  $156^\circ$ &  $79^\circ$ &   $96^\circ$ &  $124^\circ$ &  $167^\circ$ &  $81^\circ$ &   $93^\circ$ &  $127^\circ$ &  $157^\circ$ \\
+   $\ell_{\rm max} = 6$ &   $75^\circ$ &  $124^\circ$ &  $59^\circ$ &  $114^\circ$ &   $56^\circ$ &  $108^\circ$ &  $57^\circ$ &  $117^\circ$ &   $57^\circ$ &  $122^\circ$ \\
+  $\ell_{\rm max} = 10$ &   $84^\circ$ &  $123^\circ$ &  $61^\circ$ &  $160^\circ$ &   $81^\circ$ &  $127^\circ$ &  $69^\circ$ &  $108^\circ$ &   $57^\circ$ &  $134^\circ$ \\
 \bottomrule
 \end{tabular}
 
@@ -12,9 +12,9 @@
 
 \begin{tabular}{rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
 \toprule
-   $\ell_{\rm max} = 4$ &  $108^\circ$ &  $152^\circ$ &  $60^\circ$ &  $180^\circ$ &  $60^\circ$ &  $159^\circ$ &  $65^\circ$ &  $180^\circ$ &  $60^\circ$ &  $180^\circ$ \\
-   $\ell_{\rm max} = 6$ &   $36^\circ$ &  $180^\circ$ &  $54^\circ$ &  $180^\circ$ &  $36^\circ$ &  $180^\circ$ &  $45^\circ$ &  $180^\circ$ &  $36^\circ$ &  $180^\circ$ \\
-  $\ell_{\rm max} = 10$ &   $72^\circ$ &   $80^\circ$ &  $61^\circ$ &  $140^\circ$ &  $31^\circ$ &   $87^\circ$ &  $41^\circ$ &  $180^\circ$ &  $28^\circ$ &  $138^\circ$ \\
+   $\ell_{\rm max} = 4$ &  $60^\circ$ &  $178^\circ$ &  $64^\circ$ &  $180^\circ$ &  $60^\circ$ &  $180^\circ$ &  $100^\circ$ &  $180^\circ$ &  $60^\circ$ &  $180^\circ$ \\
+   $\ell_{\rm max} = 6$ &  $36^\circ$ &  $131^\circ$ &  $51^\circ$ &  $180^\circ$ &  $48^\circ$ &  $103^\circ$ &   $46^\circ$ &  $180^\circ$ &  $46^\circ$ &  $124^\circ$ \\
+  $\ell_{\rm max} = 10$ &  $72^\circ$ &   $80^\circ$ &  $56^\circ$ &  $180^\circ$ &  $69^\circ$ &   $79^\circ$ &   $57^\circ$ &  $180^\circ$ &  $67^\circ$ &   $83^\circ$ \\
 \bottomrule
 \end{tabular}
 
@@ -22,9 +22,9 @@
 
 \begin{tabular}{rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
 \toprule
-   $\ell_{\rm max} = 4$ &  $74.0\%$ &  $84.0\%$ &  $95.0\%$ &  $90.0\%$ &  $97.0\%$ \\
-   $\ell_{\rm max} = 6$ &  $64.0\%$ &  $94.0\%$ &  $92.0\%$ &  $98.0\%$ &  $94.0\%$ \\
-  $\ell_{\rm max} = 10$ &  $60.0\%$ &  $90.0\%$ &  $83.0\%$ &  $94.0\%$ &  $88.0\%$ \\
+   $\ell_{\rm max} = 4$ &  $79.0\%$ &  $86.0\%$ &  $97.0\%$ &  $91.0\%$ &  $99.0\%$ \\
+   $\ell_{\rm max} = 6$ &  $74.0\%$ &  $95.0\%$ &  $97.0\%$ &  $98.0\%$ &  $99.0\%$ \\
+  $\ell_{\rm max} = 10$ &  $67.0\%$ &  $90.0\%$ &  $94.0\%$ &  $94.0\%$ &  $96.0\%$ \\
 \bottomrule
 \end{tabular}
 
@@ -32,9 +32,9 @@
 
 \begin{tabular}{rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
 \toprule
-   $\ell_{\rm max} = 4$ &  $81.0\%$ &   $98.0\%$ &  $98.0\%$ &  $100.0\%$ &  $98.0\%$ \\
-   $\ell_{\rm max} = 6$ &  $69.0\%$ &   $99.0\%$ &  $97.0\%$ &  $100.0\%$ &  $99.0\%$ \\
-  $\ell_{\rm max} = 10$ &  $63.0\%$ &  $100.0\%$ &  $87.0\%$ &  $100.0\%$ &  $91.0\%$ \\
+   $\ell_{\rm max} = 4$ &  $84.0\%$ &  $96.0\%$ &  $98.0\%$ &   $99.0\%$ &   $98.0\%$ \\
+   $\ell_{\rm max} = 6$ &  $84.0\%$ &  $99.0\%$ &  $99.0\%$ &  $100.0\%$ &  $100.0\%$ \\
+  $\ell_{\rm max} = 10$ &  $83.0\%$ &  $99.0\%$ &  $99.0\%$ &  $100.0\%$ &  $100.0\%$ \\
 \bottomrule
 \end{tabular}
 
@@ -42,9 +42,9 @@
 
 \begin{tabular}{rrrrrrrrrrrrr}
 \toprule
-   $\ell_{\rm max} = 4$ &  $0.84\sigma$ &  $57.0\%$ &  $42.0\%$ &   $98.0\%$ &   $47.0\%$ &   $95.0\%$ \\
-   $\ell_{\rm max} = 6$ &  $1.04\sigma$ &  $44.0\%$ &  $91.0\%$ &  $100.0\%$ &  $100.0\%$ &  $100.0\%$ \\
-  $\ell_{\rm max} = 10$ &  $1.28\sigma$ &  $59.0\%$ &  $36.0\%$ &   $93.0\%$ &   $61.0\%$ &   $97.0\%$ \\
+   $\ell_{\rm max} = 4$ &  $0.77\sigma$ &  $69.0\%$ &  $58.0\%$ &   $97.0\%$ &   $65.0\%$ &   $97.0\%$ \\
+   $\ell_{\rm max} = 6$ &  $1.13\sigma$ &  $56.0\%$ &  $60.0\%$ &  $100.0\%$ &  $100.0\%$ &  $100.0\%$ \\
+  $\ell_{\rm max} = 10$ &  $1.08\sigma$ &  $35.0\%$ &  $19.0\%$ &  $100.0\%$ &   $15.0\%$ &  $100.0\%$ \\
 \bottomrule
 \end{tabular}
 
@@ -52,8 +52,8 @@
 
 \begin{tabular}{rrrrrrrrrrrrr}
 \toprule
-   $\ell_{\rm max} = 4$ &  $2.33\sigma$ &  $0.0\%$ &   $0.0\%$ &   $0.0\%$ &   $0.0\%$ &   $0.0\%$ \\
-   $\ell_{\rm max} = 6$ &  $2.05\sigma$ &  $3.0\%$ &  $28.0\%$ &  $94.0\%$ &  $74.0\%$ &  $98.0\%$ \\
-  $\ell_{\rm max} = 10$ &  $1.75\sigma$ &  $9.0\%$ &   $9.0\%$ &  $91.0\%$ &  $65.0\%$ &  $92.0\%$ \\
+   $\ell_{\rm max} = 4$ &  $2.33\sigma$ &  $0.0\%$ &  $0.0\%$ &   $0.0\%$ &  $0.0\%$ &   $0.0\%$ \\
+   $\ell_{\rm max} = 6$ &   $inf\sigma$ &  $0.0\%$ &  $0.0\%$ &   $0.0\%$ &  $0.0\%$ &   $0.0\%$ \\
+  $\ell_{\rm max} = 10$ &  $1.75\sigma$ &  $6.0\%$ &  $2.0\%$ &  $96.0\%$ &  $2.0\%$ &  $91.0\%$ \\
 \bottomrule
 \end{tabular}
