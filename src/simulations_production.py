@@ -8,7 +8,7 @@ import pymaster as nmt
 import ray
 from progressbar import ProgressBar
 
-from utils import anomalies as anoma
+from functions import mask_TT_un, mask_X_con, mask_X_un
 
 
 def get_SMICA_seeds(CurrentState):
@@ -248,7 +248,7 @@ def compute_masked_angular_spectra(
     N_id = ray.put(N)
 
     start = time.time()
-    masked_TGW_uncon_CL = anoma.mask_X_un.remote(
+    masked_TGW_uncon_CL = mask_X_un.remote(
         N_id, cmb_real_id, mask_id, lmax_id, nside_id, inv_window_id, CLs_id
     )
     masked_TGW_uncon_CL = ray.get(masked_TGW_uncon_CL)
@@ -256,7 +256,7 @@ def compute_masked_angular_spectra(
     print(f"Done masked TGW unconstrained spectra in {round(end-start, 2)} seconds!")
 
     start = time.time()
-    masked_TGW_con_CL = anoma.mask_X_con.remote(
+    masked_TGW_con_CL = mask_X_con.remote(
         N_id, cmb_map_id, cgwb_masked_con_real_id, mask_id, lmax_id, nside_id
     )
     masked_TGW_con_CL = ray.get(masked_TGW_con_CL)
@@ -264,7 +264,7 @@ def compute_masked_angular_spectra(
     print(f"Done masked TGW constrained spectra in {round(end-start, 2)} seconds!")
 
     start = time.time()
-    masked_TT_uncon_CL = anoma.mask_TT_un.remote(
+    masked_TT_uncon_CL = mask_TT_un.remote(
         N_id, cmb_real_id, mask_id, lmax_id, nside_id
     )
     masked_TT_uncon_CL = ray.get(masked_TT_uncon_CL)
