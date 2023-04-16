@@ -54,7 +54,7 @@ class Settings:
 
     def get_colormap(self) -> None:
         self.cmap = ListedColormap(
-            np.loadtxt(self.dir.joinpath("../../../../data/Planck_cmap.txt")) / 255.0
+            np.loadtxt(self.dir.joinpath("../../Planck_data/Planck_cmap.txt")) / 255.0
         )
         self.cmap.set_bad("gray")  # color of missing pixels
         self.cmap.set_under("white")
@@ -72,7 +72,7 @@ class Settings:
         from functions import downgrade_map
 
         mask_file = self.dir.joinpath(
-            "../../../../data/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
+            "../../Planck_data/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
         )
         mask = read_map(mask_file)
         mask = downgrade_map(mask, self.nside, fwhmout=np.deg2rad(self.smoothing))
@@ -88,7 +88,7 @@ class Settings:
         from functions import downgrade_map
 
         planck_filename = self.dir.joinpath(
-            "../../../../data/COM_CMB_IQU-smica_2048_R3.00_full.fits"
+            "../../Planck_data/COM_CMB_IQU-smica_2048_R3.00_full.fits"
         )
         planck_map = read_map(planck_filename, field=0) * 1e6  # We want muK2
         return downgrade_map(planck_map, self.nside, fwhmout=np.deg2rad(self.smoothing))
