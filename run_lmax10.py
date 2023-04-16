@@ -23,7 +23,13 @@ def get_CurrentSettings(**kwargs):
 
 
 def main(
-    do_simulations=True, savefig=True, show=False, debug=False, batch="testing", N=100
+    *,
+    do_simulations: bool = True,
+    savefig: bool = False,
+    show: bool = False,
+    debug: bool = False,
+    batch: str = "testing",
+    N: int = 100,
 ):
     print("\n*************** INITIALIZING SETTING *************")
     CurrentSettings = get_CurrentSettings(
@@ -53,10 +59,10 @@ def main(
         compute_S_estimators.main(CurrentState)
         print("\n******** COMPUTING CUMULATIVE S ESTIMATORS *******")
         save_cumulative_S_estimators.main(CurrentState)
-    print("\n********** SAVING OPTIMAL ANGULAR RANGES *********")
-    save_optimal.main(CurrentState)
-    print("\n************** SAVING SIGNIFICANCES **************")
-    save_significance.main(CurrentState)
+        print("\n********** SAVING OPTIMAL ANGULAR RANGES *********")
+        save_optimal.main(CurrentState)
+        print("\n************** SAVING SIGNIFICANCES **************")
+        save_significance.main(CurrentState)
 
     if CurrentSettings.show or CurrentSettings.savefig:
         print("\n***** PLOTTING 2-POINT CORRELATION FUNCTIONS *****")

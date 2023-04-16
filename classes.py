@@ -1,7 +1,8 @@
+from __future__ import annotations
+
+import pickle
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
-import pickle
 
 import numpy as np
 from matplotlib.colors import ListedColormap
@@ -10,7 +11,6 @@ from matplotlib.colors import ListedColormap
 @dataclass()
 class Settings:
     lmax: int
-    # dir: Path
     savefig: bool
     show: bool
     N: int
@@ -69,6 +69,7 @@ class Settings:
 
     def get_mask(self) -> np.ndarray:
         from healpy import read_map
+
         from functions import downgrade_map
 
         mask_file = self.dir.joinpath(
@@ -85,6 +86,7 @@ class Settings:
 
     def get_cmb_map(self) -> np.ndarray:
         from healpy import read_map
+
         from functions import downgrade_map
 
         planck_filename = self.dir.joinpath(
@@ -195,9 +197,9 @@ class State:
     settings: Settings
     signi_dict: dict = field(init=False)
     opt_angs: dict = field(init=False)
-    spectra_files: List[str] = field(init=False)
-    S_files: List[str] = field(init=False)
-    cumu_S_files: List[str] = field(init=False)
+    spectra_files: list[str] = field(init=False)
+    S_files: list[str] = field(init=False)
+    cumu_S_files: list[str] = field(init=False)
     CLs: dict = field(init=False)
     cmb_map: np.ndarray = field(init=False)
     mask: np.ndarray = field(init=False)
@@ -257,7 +259,7 @@ class State:
         with open(file, "rb") as pickle_file:
             return pickle.load(pickle_file)
 
-    def collect_spectra(self, files: List[str]) -> dict:
+    def collect_spectra(self, files: list[str]) -> dict:
         names = [(file.stem).replace(self.settings.prefix, "") for file in files]
 
         data = {}
@@ -271,7 +273,7 @@ class State:
 
     def save_SMICA_spectra(self) -> None:
         from healpy import alm2cl, map2alm
-        from pymaster import NmtWorkspace, NmtField, NmtBin, compute_full_master
+        from pymaster import NmtBin, NmtField, NmtWorkspace, compute_full_master
 
         lmax = self.settings.lmax
         nside = self.settings.nside
