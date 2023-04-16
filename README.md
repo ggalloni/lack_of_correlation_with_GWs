@@ -30,3 +30,7 @@ Assuming that you have all the necessary dependencies, data and input spectra, t
 ## Testing
 
 As an example, I provide the results of a test pipeline, named "testing", assuming $N=100$. In particular, in the folder `data\testing` you can find every product of the analysis, figures included.
+
+## Important notes
+
+To run the actual analysis, I use $N=10000$ simulations. This means that the `complete_pipeline.py` script takes approximately 20 minutes to finish (I have 16 GB of RAM and 8 cores for a total of 16 CPUs). Alse, the resulting folder containing the products will occupy approximately 104 GB.
