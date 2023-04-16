@@ -21,6 +21,12 @@ These are the necessary dependencies to run the analysis:
 * time
 * matplotlib
 
+In order to run the code you also need an implementation of [CLASS](https://github.com/lesgourg/class_public) ([D. Blas et al., 2011](http://arxiv.org/abs/1104.2933)), which encodes the Boltzmann equations for the CGWB, as defined in [A. Ricciardone et al., 2021](https://arxiv.org/pdf/2106.02591.pdf).
+
 ## Repeating the analysis
 
-To perform the analysis it is sufficient to run `complete_pipeline.py`, given that you have all the necessary dependencies and data. Alternatively, if you want to run the analysis on a single $\ell_{\rm max}$ choice, run one of `run_lmax4.py`, `run_lmax6.py` or `run_lmax10.py`.
+Assuming that you have all the necessary dependencies, data and input spectra, to perform the analysis it is sufficient to run `complete_pipeline.py`. Alternatively, if you want to run the analysis on a single $\ell_{\rm max}$ choice, run one of `run_lmax4.py`, `run_lmax6.py` or `run_lmax10.py`.
+
+## Testing
+
+As an example, I provide the results of a test pipeline, named "testing", assuming $N=100$. In particular, in the folder `data\testing` you can find every product of the analysis, figures included.
