@@ -44,6 +44,7 @@
   <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
 </svg>                &nbsp;GW_lack_corr.classes</a>
 
+            <img src="https://github.com/ggalloni/lack_of_correlation_with_GWs/blob/main/lack_logo.png" class="logo" alt="project logo"/>
 
             <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
                    pattern=".+" required>
@@ -307,7 +308,7 @@
 </span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a>        <span class="n">planck_map</span> <span class="o">=</span> <span class="n">read_map</span><span class="p">(</span><span class="n">planck_filename</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span>  <span class="c1"># We want muK2</span>
 </span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a>        <span class="k">return</span> <span class="n">downgrade_map</span><span class="p">(</span><span class="n">planck_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">fwhmout</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span><span class="p">))</span>
 </span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a>
-</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a>    <span class="k">def</span> <span class="nf">get_spectra_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a>    <span class="k">def</span> <span class="nf">get_spectra_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">        Get the files where the spectra are stored.</span>
 </span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a>
@@ -328,7 +329,7 @@
 </span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;masked_TGW_con_CL.pkl&quot;</span><span class="p">),</span>  <span class="c1"># 8</span>
 </span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a>        <span class="p">]</span>
 </span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a>
-</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a>    <span class="k">def</span> <span class="nf">get_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a>    <span class="k">def</span> <span class="nf">get_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a><span class="sd">        Get the files where the S estimators are stored.</span>
 </span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a>
@@ -363,7 +364,7 @@
 </span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;S_masked_con_TT_TGW.pkl&quot;</span><span class="p">),</span>  <span class="c1"># 22</span>
 </span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a>        <span class="p">]</span>
 </span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a>
-</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>    <span class="k">def</span> <span class="nf">get_cumu_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>    <span class="k">def</span> <span class="nf">get_cumu_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a><span class="sd">        Get the files where the cumulative S estimators are stored.</span>
 </span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a>
@@ -400,7 +401,7 @@
 </span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;cumu_S_masked_con_TT_TGW.pkl&quot;</span><span class="p">),</span>  <span class="c1"># 22</span>
 </span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>        <span class="p">]</span>
 </span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>
-</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a>    <span class="k">def</span> <span class="nf">get_significance_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a>    <span class="k">def</span> <span class="nf">get_significance_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a><span class="sd">        Get the files where the significance estimators are stored.</span>
 </span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a>
@@ -636,7 +637,7 @@
 </span><span id="Settings-197"><a href="#Settings-197"><span class="linenos">197</span></a>        <span class="n">planck_map</span> <span class="o">=</span> <span class="n">read_map</span><span class="p">(</span><span class="n">planck_filename</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span>  <span class="c1"># We want muK2</span>
 </span><span id="Settings-198"><a href="#Settings-198"><span class="linenos">198</span></a>        <span class="k">return</span> <span class="n">downgrade_map</span><span class="p">(</span><span class="n">planck_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">fwhmout</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span><span class="p">))</span>
 </span><span id="Settings-199"><a href="#Settings-199"><span class="linenos">199</span></a>
-</span><span id="Settings-200"><a href="#Settings-200"><span class="linenos">200</span></a>    <span class="k">def</span> <span class="nf">get_spectra_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="Settings-200"><a href="#Settings-200"><span class="linenos">200</span></a>    <span class="k">def</span> <span class="nf">get_spectra_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings-201"><a href="#Settings-201"><span class="linenos">201</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings-202"><a href="#Settings-202"><span class="linenos">202</span></a><span class="sd">        Get the files where the spectra are stored.</span>
 </span><span id="Settings-203"><a href="#Settings-203"><span class="linenos">203</span></a>
@@ -657,7 +658,7 @@
 </span><span id="Settings-218"><a href="#Settings-218"><span class="linenos">218</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;masked_TGW_con_CL.pkl&quot;</span><span class="p">),</span>  <span class="c1"># 8</span>
 </span><span id="Settings-219"><a href="#Settings-219"><span class="linenos">219</span></a>        <span class="p">]</span>
 </span><span id="Settings-220"><a href="#Settings-220"><span class="linenos">220</span></a>
-</span><span id="Settings-221"><a href="#Settings-221"><span class="linenos">221</span></a>    <span class="k">def</span> <span class="nf">get_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="Settings-221"><a href="#Settings-221"><span class="linenos">221</span></a>    <span class="k">def</span> <span class="nf">get_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings-222"><a href="#Settings-222"><span class="linenos">222</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings-223"><a href="#Settings-223"><span class="linenos">223</span></a><span class="sd">        Get the files where the S estimators are stored.</span>
 </span><span id="Settings-224"><a href="#Settings-224"><span class="linenos">224</span></a>
@@ -692,7 +693,7 @@
 </span><span id="Settings-253"><a href="#Settings-253"><span class="linenos">253</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;S_masked_con_TT_TGW.pkl&quot;</span><span class="p">),</span>  <span class="c1"># 22</span>
 </span><span id="Settings-254"><a href="#Settings-254"><span class="linenos">254</span></a>        <span class="p">]</span>
 </span><span id="Settings-255"><a href="#Settings-255"><span class="linenos">255</span></a>
-</span><span id="Settings-256"><a href="#Settings-256"><span class="linenos">256</span></a>    <span class="k">def</span> <span class="nf">get_cumu_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="Settings-256"><a href="#Settings-256"><span class="linenos">256</span></a>    <span class="k">def</span> <span class="nf">get_cumu_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings-257"><a href="#Settings-257"><span class="linenos">257</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings-258"><a href="#Settings-258"><span class="linenos">258</span></a><span class="sd">        Get the files where the cumulative S estimators are stored.</span>
 </span><span id="Settings-259"><a href="#Settings-259"><span class="linenos">259</span></a>
@@ -729,7 +730,7 @@
 </span><span id="Settings-290"><a href="#Settings-290"><span class="linenos">290</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;cumu_S_masked_con_TT_TGW.pkl&quot;</span><span class="p">),</span>  <span class="c1"># 22</span>
 </span><span id="Settings-291"><a href="#Settings-291"><span class="linenos">291</span></a>        <span class="p">]</span>
 </span><span id="Settings-292"><a href="#Settings-292"><span class="linenos">292</span></a>
-</span><span id="Settings-293"><a href="#Settings-293"><span class="linenos">293</span></a>    <span class="k">def</span> <span class="nf">get_significance_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="Settings-293"><a href="#Settings-293"><span class="linenos">293</span></a>    <span class="k">def</span> <span class="nf">get_significance_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings-294"><a href="#Settings-294"><span class="linenos">294</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings-295"><a href="#Settings-295"><span class="linenos">295</span></a><span class="sd">        Get the files where the significance estimators are stored.</span>
 </span><span id="Settings-296"><a href="#Settings-296"><span class="linenos">296</span></a>
@@ -1045,13 +1046,13 @@ CMB map.</li>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_spectra_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="s1">&#39;list[Path]&#39;</span>:</span></span>
+        <span class="name">get_spectra_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span>:</span></span>
 
                 <label class="view-source-button" for="Settings.get_spectra_files-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#Settings.get_spectra_files"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_spectra_files-200"><a href="#Settings.get_spectra_files-200"><span class="linenos">200</span></a>    <span class="k">def</span> <span class="nf">get_spectra_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_spectra_files-200"><a href="#Settings.get_spectra_files-200"><span class="linenos">200</span></a>    <span class="k">def</span> <span class="nf">get_spectra_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings.get_spectra_files-201"><a href="#Settings.get_spectra_files-201"><span class="linenos">201</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings.get_spectra_files-202"><a href="#Settings.get_spectra_files-202"><span class="linenos">202</span></a><span class="sd">        Get the files where the spectra are stored.</span>
 </span><span id="Settings.get_spectra_files-203"><a href="#Settings.get_spectra_files-203"><span class="linenos">203</span></a>
@@ -1091,13 +1092,13 @@ List of the files where the spectra are stored.</li>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_S_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="s1">&#39;list[Path]&#39;</span>:</span></span>
+        <span class="name">get_S_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span>:</span></span>
 
                 <label class="view-source-button" for="Settings.get_S_files-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#Settings.get_S_files"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_S_files-221"><a href="#Settings.get_S_files-221"><span class="linenos">221</span></a>    <span class="k">def</span> <span class="nf">get_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_S_files-221"><a href="#Settings.get_S_files-221"><span class="linenos">221</span></a>    <span class="k">def</span> <span class="nf">get_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings.get_S_files-222"><a href="#Settings.get_S_files-222"><span class="linenos">222</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings.get_S_files-223"><a href="#Settings.get_S_files-223"><span class="linenos">223</span></a><span class="sd">        Get the files where the S estimators are stored.</span>
 </span><span id="Settings.get_S_files-224"><a href="#Settings.get_S_files-224"><span class="linenos">224</span></a>
@@ -1151,13 +1152,13 @@ List of the files where the S estimators are stored.</li>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_cumu_S_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="s1">&#39;list[Path]&#39;</span>:</span></span>
+        <span class="name">get_cumu_S_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span>:</span></span>
 
                 <label class="view-source-button" for="Settings.get_cumu_S_files-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#Settings.get_cumu_S_files"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_cumu_S_files-256"><a href="#Settings.get_cumu_S_files-256"><span class="linenos">256</span></a>    <span class="k">def</span> <span class="nf">get_cumu_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_cumu_S_files-256"><a href="#Settings.get_cumu_S_files-256"><span class="linenos">256</span></a>    <span class="k">def</span> <span class="nf">get_cumu_S_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings.get_cumu_S_files-257"><a href="#Settings.get_cumu_S_files-257"><span class="linenos">257</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings.get_cumu_S_files-258"><a href="#Settings.get_cumu_S_files-258"><span class="linenos">258</span></a><span class="sd">        Get the files where the cumulative S estimators are stored.</span>
 </span><span id="Settings.get_cumu_S_files-259"><a href="#Settings.get_cumu_S_files-259"><span class="linenos">259</span></a>
@@ -1213,13 +1214,13 @@ List of the files where the cumulative S estimators are stored.</li>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_significance_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="s1">&#39;list[Path]&#39;</span>:</span></span>
+        <span class="name">get_significance_files</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span>:</span></span>
 
                 <label class="view-source-button" for="Settings.get_significance_files-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#Settings.get_significance_files"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_significance_files-293"><a href="#Settings.get_significance_files-293"><span class="linenos">293</span></a>    <span class="k">def</span> <span class="nf">get_significance_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Settings.get_significance_files-293"><a href="#Settings.get_significance_files-293"><span class="linenos">293</span></a>    <span class="k">def</span> <span class="nf">get_significance_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 </span><span id="Settings.get_significance_files-294"><a href="#Settings.get_significance_files-294"><span class="linenos">294</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="Settings.get_significance_files-295"><a href="#Settings.get_significance_files-295"><span class="linenos">295</span></a><span class="sd">        Get the files where the significance estimators are stored.</span>
 </span><span id="Settings.get_significance_files-296"><a href="#Settings.get_significance_files-296"><span class="linenos">296</span></a>
