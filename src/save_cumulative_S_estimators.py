@@ -4,6 +4,13 @@ from functions import summing
 
 
 def get_triangular_mask(CurrentState: State):
+    """Create a triangular mask for the summing procedure (we sum only over theta_min < theta_max).
+
+    Parameters
+    ----------
+    CurrentState : State
+        The state of the program.
+    """
     size = 180 - int(180 / (CurrentState.settings.lmax - 1)) + 1
     mask = np.tri(size, k=-1, dtype=int)[:, ::-1]
     mask = np.array([mask for i in range(CurrentState.settings.N)])

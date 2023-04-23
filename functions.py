@@ -1,8 +1,11 @@
+from pathlib import Path
 import pickle
 import time
+from typing import Any
 
 import healpy as hp
 import matplotlib as mpl
+from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.pyplot as plt
 import numba as nb
 import numpy as np
@@ -20,11 +23,22 @@ from scipy.integrate import nquad
 np.seterr(divide="ignore", invalid="ignore")
 
 
-def integrate_spherical_harmonics(l1, m1, l2, m2):
+def integrate_spherical_harmonics(l1: int, m1: int, l2: int, m2: int) -> float:
     """
     Compute the integral of the product of two spherical harmonics with
     rank (l1, m1) and (l2, m2) over the sphere, and compare it to the expected
     value of 1 if l1=l2 and m1=m2, and 0 otherwise.
+
+    Parameters
+    ----------
+    l1 : int
+        Rank of the first spherical harmonic.
+    m1 : int
+        Orientation index of the first spherical harmonic.
+    l2 : int
+        Rank of the second spherical harmonic.
+    m2 : int
+        Orientation index of the second spherical harmonic.
     """
 
     def integrand(theta, phi):
@@ -41,12 +55,27 @@ def integrate_spherical_harmonics(l1, m1, l2, m2):
     return integral, expected
 
 
-def integrate_spherical_harmonics_pix(l1, m1, l2, m2, nside):
+def integrate_spherical_harmonics_pix(
+    l1: int, m1: int, l2: int, m2: int, nside: int
+) -> float:
     """
     Compute the integral of the product of two spherical harmonics with
     rank (l1, m1) and (l2, m2) over the pixels of a HEALPix partition with
     resolution nside, and compare it to the expected value of 1 if l1=l2 and
     m1=m2, and 0 otherwise.
+
+    Parameters
+    ----------
+    l1 : int
+        Rank of the first spherical harmonic.
+    m1 : int
+        Orientation index of the first spherical harmonic.
+    l2 : int
+        Rank of the second spherical harmonic.
+    m2 : int
+        Orientation index of the second spherical harmonic.
+    nside : int
+        Resolution of the HEALPix partition.
     """
     npix = hp.nside2npix(nside)
     theta, phi = hp.pix2ang(nside, np.arange(npix))
@@ -64,12 +93,29 @@ def integrate_spherical_harmonics_pix(l1, m1, l2, m2, nside):
     return integral, expected
 
 
-def integrate_spherical_harmonics_pix_mask(l1, m1, l2, m2, nside, mask):
+def integrate_spherical_harmonics_pix_mask(
+    l1: int, m1: int, l2: int, m2: int, nside: int, mask: np.ndarray
+) -> float:
     """
     Compute the integral of the product of two spherical harmonics with
     rank (l1, m1) and (l2, m2) over the pixels of a HEALPix partition with
     resolution nside that are marked as valid by the mask, and
     compare it to the expected value of 1 if l1=l2 and m1=m2, and 0 otherwise.
+
+    Parameters
+    ----------
+    l1 : int
+        Rank of the first spherical harmonic.
+    m1 : int
+        Orientation index of the first spherical harmonic.
+    l2 : int
+        Rank of the second spherical harmonic.
+    m2 : int
+        Orientation index of the second spherical harmonic.
+    nside : int
+        Resolution of the HEALPix partition.
+    mask : array_like
+        Mask of the CMB sky, with 1 for valid pixels and 0 for invalid ones.
     """
     npix = hp.nside2npix(nside)
     theta, phi = hp.pix2ang(nside, np.arange(npix))
@@ -89,19 +135,21 @@ def integrate_spherical_harmonics_pix_mask(l1, m1, l2, m2, nside, mask):
     return integral, expected
 
 
-def build_window_function(lmax, nside, mask):
+def build_window_function(lmax: int, nside: int, mask: np.ndarray) -> np.ndarray:
+    """Build the window function matrix for a given mask.
+
+    Parameters
+    ----------
+    lmax : int
+        The maximum multipole of the window function.
+    nside : int
+        The resolution of the HEALPix partition.
+    mask : array_like
+        The mask of the CMB sky, with 1 for valid pixels and 0 for invalid ones.
+    """
     alm_size = hp.Alm.getsize(lmax)
 
     W = np.zeros((alm_size, alm_size), dtype=complex)
-    # for emm in range(lmax + 1):
-    #     for ell in range(emm, lmax + 1):
-    #         for ellp in range(ell, lmax + 1):
-    #             i = hp.Alm.getidx(lmax, ell, emm)
-    #             j = hp.Alm.getidx(lmax, ellp, emm)
-    #             W[i, j], _ = integrate_spherical_harmonics_pix_mask(
-    #                 ell, emm, ellp, emm, nside, mask
-    #             )
-    #             W[j, i] = W[i, j]
     for i in range(alm_size):
         l1, m1 = hp.Alm.getlm(lmax, i)
         for j in range(i, alm_size):
@@ -110,65 +158,50 @@ def build_window_function(lmax, nside, mask):
                 l1, m1, l2, m2, nside, mask
             )
             W[j, i] = W[i, j]
-    # W[0, :] = 0
-    # W[:, 0] = 0
-    # W[1, :] = 0
-    # W[:, 1] = 0
-    # W[lmax + 1, :] = 0
-    # W[:, lmax + 1] = 0
 
     return W
 
 
-def correct_mat(mat, lmax):
-    """Correct a matrix for cross-correlation.
+# def correct_mat(mat, lmax):
+#     """Correct a matrix for cross-correlation.
 
-    Parameters
-    ----------
-    mat : array_like
-        The matrix to correct.
-    lmax : int
-        The maximum multipole of the matrix.
-
-    Returns
-    -------
-    array_like
-        The corrected matrix.
-
-    """
-    if mat.shape[0] != mat.shape[1]:
-        raise ValueError("The matrix is not square.")  # noqa: EM101
-    mat[1:, 1:] *= np.sqrt(1)
-    mat[1:, 1:] *= np.sqrt(4)
-    mat[0, :] = 0
-    mat[:, 0] = 0
-    mat[1, :] = 0
-    mat[:, 1] = 0
-    mat[lmax + 1, :] = 0
-    mat[:, lmax + 1] = 0
-    return mat
+#     Parameters
+#     ----------
+#     mat : array_like
+#         The matrix to correct.
+#     lmax : int
+#         The maximum multipole of the matrix.
+#     """
+#     if mat.shape[0] != mat.shape[1]:
+#         raise ValueError("The matrix is not square.")  # noqa: EM101
+#     mat[1:, 1:] *= np.sqrt(1)
+#     mat[1:, 1:] *= np.sqrt(4)
+#     mat[0, :] = 0
+#     mat[:, 0] = 0
+#     mat[1, :] = 0
+#     mat[:, 1] = 0
+#     mat[lmax + 1, :] = 0
+#     mat[:, lmax + 1] = 0
+#     return mat
 
 
-def decouple_alms(alms, real_cov, imag_cov, CLS, lmax):
+def decouple_alms(
+    alms: np.ndarray, real_cov: np.ndarray, imag_cov: np.ndarray, CLS: dict, lmax: int
+) -> np.ndarray:
     """Decouple the alms from the GW and noise covariance.
 
     Parameters
     ----------
-    alms : array_like
+    alms : np.ndarray
         The alms of the map we want to decouple.
-    real_cov : array_like
+    real_cov : np.ndarray
         The real part of the GW and noise covariance matrix.
-    imag_cov : array_like
+    imag_cov : np.ndarray
         The imaginary part of the GW and noise covariance matrix.
     CLS : dict
         The power spectra of the map.
     lmax : int
         The maximum l value to use in the decoupling.
-
-    Returns
-    -------
-    decoupled_alm : array_like
-        The decoupled alms.
     """
     # Decouple the real part of the map
     decoupled_alm_real = np.zeros(alms.shape, dtype=complex)
@@ -201,14 +234,23 @@ def decouple_alms(alms, real_cov, imag_cov, CLS, lmax):
 
 
 @ray.remote
-def mask_TT_un(N, cmb_real, mask, lmax, nside):
-    """
-    Calculate the TT power spectrum of the realisations of the CMB using a given mask.
-    N: number of realisations of the CMB
-    cmb_real: dictionary containing the realisations of the CMB
-    mask: mask used to calculate the TT power spectrum
-    lmax: maximum multipole of the TT power spectrum
-    nside: resolution of the TT power spectrum
+def mask_TT_un(
+    N: int, cmb_real: dict, mask: np.ndarray, lmax: int, nside: int
+) -> list(np.ndarray):
+    """Calculate the TT power spectrum of the realisations of the CMB using a given mask.
+
+    Parameters
+    ----------
+    N : int
+        The number of realisations of the CMB.
+    cmb_real : dict
+        The realisations of the CMB.
+    mask : np.ndarray
+        The mask used to calculate the TT power spectrum.
+    lmax : int
+        The maximum multipole of the TT power spectrum.
+    nside : int
+        The resolution of the TT power spectrum.
     """
     res = []
     for i in range(N):
@@ -226,7 +268,34 @@ def mask_TT_un(N, cmb_real, mask, lmax, nside):
 
 
 @ray.remote
-def mask_X_un(N, cmb_real, mask, lmax, nside, inv_window, CLs):
+def mask_X_un(
+    N: int,
+    cmb_real: dict,
+    mask: np.ndarray,
+    lmax: int,
+    nside: int,
+    inv_window: np.ndarray,
+    CLs: dict,
+) -> list(np.ndarray):
+    """Calculate the TGW power spectrum of the realisations of the CGWB using a given mask.
+
+    Parameters
+    ----------
+    N : int
+        The number of realisations of the CMB.
+    cmb_real : dict
+        The realisations of the CMB.
+    mask : array_like
+        The mask used to calculate the GW power spectrum.
+    lmax : int
+        The maximum multipole of the GW power spectrum.
+    nside : int
+        The resolution of the GW power spectrum.
+    inv_window : array_like
+        The inverse of the window function.
+    CLs : dict
+        The power spectra of the map.
+    """
     res = []
     constrained_GWGW_spectrum = CLs["gwgw"] - CLs["tgw"] ** 2 / CLs["tt"]
     constrained_GWGW_spectrum[np.isnan(constrained_GWGW_spectrum)] = 0.0
@@ -255,7 +324,24 @@ def mask_X_un(N, cmb_real, mask, lmax, nside, inv_window, CLs):
 
 
 @ray.remote
-def mask_X_con(N, cmb_map, cgwb_real, mask, lmax, nside):
+def mask_X_con(
+    N: int, cmb_map: dict, cgwb_real: dict, mask: np.ndarray, lmax: int, nside: int
+) -> list(np.ndarray):
+    """Calculate the TGW power spectrum of the realisations of the GWB using a given mask and a CMB skymap.
+
+    Parameters
+    ----------
+    N : int
+        The number of realisations of the CMB.
+    cmb_real : dict
+        The realisations of the CMB.
+    mask : np.ndarray
+        The mask used to calculate the GW power spectrum.
+    lmax : int
+        The maximum multipole of the GW power spectrum.
+    nside : int
+        The resolution of the GW power spectrum.
+    """
     res = []
     for i in range(N):
         f_T = nmt.NmtField(mask, [cmb_map], spin=0)
@@ -276,6 +362,22 @@ def mask_X_con(N, cmb_map, cgwb_real, mask, lmax, nside):
 
 @ray.remote
 def get_sample_field(i, real, mask, filter, nside):
+    """Get the sample field for the i-th realization of the CGWB.
+
+    Parameters
+    ----------
+    i : int
+        The i-th realization of the CGWB.
+    real : dict
+        The realizations of the CGWB.
+    mask : array_like
+        The mask used to calculate the GW power spectrum.
+    filter : array_like
+        The filter used to calculate the GW power spectrum.
+    nside : int
+        The resolution of the GW power spectrum.
+    """
+
     # Get the field
     f_T = nmt.NmtField(mask, [hp.alm2map(real[i], nside)])
     # Get the alms
@@ -305,15 +407,15 @@ def cov_comp_real(k, realizations):
 
 
 @ray.remote
-def cov_comp_imag(k, realizations):
+def cov_comp_imag(k: int, realizations: np.ndarray) -> np.ndarray:
     """Compute the covariances for the complex numbers in the k-th row of realizations.
 
-    Args:
-        k (int): The row of realizations to compute covariances for.
-        realizations (np.ndarray): The array of complex numbers to compute covariances for.
-
-    Returns:
-        covariances (np.ndarray): The computed covariances.
+    Parameters
+    ----------
+        k: int
+            The row of realizations to compute covariances for.
+        realizations: np.ndarray
+            The array of complex numbers to compute covariances for.
     """
     covariances = np.zeros((len(realizations[0]), len(realizations[0])))
     for i in range(len(realizations[0])):
@@ -322,41 +424,79 @@ def cov_comp_imag(k, realizations):
     return np.real(covariances)
 
 
-def legendre_intergal(μ_min, μ_max, lmax):
+def legendre_intergal(μ_min: np.ndarray, μ_max: np.ndarray, lmax: int) -> np.ndarray:
+    """Calculate the integral of the Legendre polynomials.
+
+    Parameters
+    ----------
+    μ_min : np.ndarray
+        The minimum value of the cosine of the angle between the vector and the line of sight.
+    μ_max : np.ndarray
+        The maximum value of the cosine of the angle between the vector and the line of sight.
+    lmax : int
+        The maximum multipole of the GW power spectrum.
+    """
+
     # initialize the result matrix
     res = np.zeros(shape=(len(μ_min), len(μ_max), lmax + 1 - 2, lmax + 1 - 2))
 
     # loop over the different values of μ_min
-    for l in nb.prange(len(μ_min)):
+    for angmin in nb.prange(len(μ_min)):
         # compute the cosine of the current μ_min
-        cos_min = np.cos(np.deg2rad(μ_min[l]))
+        cos_min = np.cos(np.deg2rad(μ_min[angmin]))
 
         # loop over the different values of μ_max
-        for k in nb.prange(len(μ_max)):
+        for angmax in nb.prange(len(μ_max)):
             # compute the cosine of the current μ_max
-            cos_max = np.cos(np.deg2rad(μ_max[k]))
+            cos_max = np.cos(np.deg2rad(μ_max[angmax]))
 
             # check if the current μ_max is greater than the current μ_min
-            if l < k:
+            if angmin < angmax:
                 # loop over the different values of l
-                for i in nb.prange(2, lmax + 1, 1):
+                for ell in nb.prange(2, lmax + 1, 1):
                     # loop over the different values of k
-                    for j in nb.prange(2, lmax + 1, 1):
+                    for ellp in nb.prange(2, lmax + 1, 1):
                         # compute the integral
-                        res[l, k, i - 2, j - 2] = inte.quad(
-                            lambda x: ss.eval_legendre(i, x) * ss.eval_legendre(j, x),
+                        res[angmin, angmax, ell - 2, ellp - 2] = inte.quad(
+                            lambda x: ss.eval_legendre(ell, x)
+                            * ss.eval_legendre(ellp, x),
                             cos_max,
                             cos_min,
                         )[0]
-
                         # copy the result to the other half of the matrix
-                        res[k, l, i - 2, j - 2] = res[l, k, i - 2, j - 2]
+                        res[angmax, angmin, ell - 2, ellp - 2] = res[
+                            angmin, angmax, ell - 2, ellp - 2
+                        ]
 
     return res
 
 
 @nb.njit(parallel=True)
-def S_estimator(μ_min, μ_max, I, CLS, N, lmax):
+def S_estimator(
+    μ_min: np.ndarray,
+    μ_max: np.ndarray,
+    integral: np.ndarray,
+    CLS: np.ndarray,
+    N: int,
+    lmax: int,
+) -> np.ndarray:
+    """Estimate the S estimators.
+
+    Parameters
+    ----------
+    μ_min : np.ndarray
+        The minimum value of the cosine of the angle between the vector and the line of sight.
+    μ_max : np.ndarray
+        The maximum value of the cosine of the angle between the vector and the line of sight.
+    integral : np.ndarray
+        The result of the integral of the Legendre polynomials.
+    CLS : np.ndarray
+        The power spectrum of the CGWB.
+    N : int
+        The number of realizations.
+    lmax : int
+        The maximum multipole of the GW power spectrum.
+    """
     # Define a matrix to store the result
     S_x = np.zeros(shape=(len(μ_min), len(μ_max), N))
     # Define the ell values
@@ -374,21 +514,21 @@ def S_estimator(μ_min, μ_max, I, CLS, N, lmax):
                 # Only compute the result if μ_min < μ_max
                 if k < m:
                     # Load the intermediate result for this realization
-                    I_km = I[k, m, :, :]
+                    I_km = integral[k, m, :, :]
                     # Loop over l
-                    for l in nb.prange(2, lmax + 1, 1):
+                    for ell in nb.prange(2, lmax + 1, 1):
                         # Loop over j
                         for j in nb.prange(2, lmax + 1, 1):
                             # Compute the intermediate result
-                            temp[l - 2, j - 2] = (
-                                (2 * ell[l] + 1)
+                            temp[ell - 2, j - 2] = (
+                                (2 * ell[ell] + 1)
                                 / 4
                                 / np.pi
                                 * (2 * ell[j] + 1)
                                 / 4
                                 / np.pi
-                                * CLS_i[l]
-                                * I_km[l - 2, j - 2]
+                                * CLS_i[ell]
+                                * I_km[ell - 2, j - 2]
                                 * CLS_i[j]
                             )
                     # Compute the result
@@ -399,9 +539,36 @@ def S_estimator(μ_min, μ_max, I, CLS, N, lmax):
 
 
 # @ray.remote
-def compute_S(file, μ_min, μ_max, I, TT_uncon_CL, N, lmax):
+def compute_S(
+    file: str,
+    μ_min: np.ndarray,
+    μ_max: np.ndarray,
+    integral: np.ndarray,
+    TT_uncon_CL: np.ndarray,
+    N: int,
+    lmax: int,
+) -> None:
+    """Compute the S estimators.
+
+    Parameters
+    ----------
+    file : str
+        The output file.
+    μ_min : array_like
+        The minimum value of the cosine of the angle between the vector and the line of sight.
+    μ_max : array_like
+        The maximum value of the cosine of the angle between the vector and the line of sight.
+    integral : array_like
+        The result of the integral of the Legendre polynomials.
+    TT_uncon_CL : array_like
+        The power spectrum of the CGWB.
+    N : int
+        The number of realizations.
+    lmax : int
+        The maximum multipole of the GW power spectrum.
+    """
     start = time.time()
-    S = np.array(S_estimator(μ_min, μ_max, I, TT_uncon_CL, N, lmax))
+    S = np.array(S_estimator(μ_min, μ_max, integral, TT_uncon_CL, N, lmax))
     with open(file, "wb") as pickle_file:
         pickle.dump(S, pickle_file)
     S = 0
@@ -411,7 +578,25 @@ def compute_S(file, μ_min, μ_max, I, TT_uncon_CL, N, lmax):
 
 
 # @ray.remote
-def compute_joint_S(out, T_file, con_T_file, GW_file, con_GW_file):
+def compute_joint_S(
+    out: str, T_file: str, con_T_file: str, GW_file: str, con_GW_file: str
+):
+    """Compute the joint S estimators combining single field ones.
+
+    Parameters
+    ----------
+    out : str
+        The output file.
+    T_file : str
+        The file containing the TT S estimators.
+    con_T_file : str
+        The file containing the TT S estimators for the constrained case.
+    GW_file : str
+        The file containing the GWGW S estimators.
+    con_GW_file : str
+        The file containing the GWGW S estimators for the constrained case.
+    """
+
     start = time.time()
 
     with open(T_file, "rb") as pickle_file:
@@ -443,7 +628,35 @@ def compute_joint_S(out, T_file, con_T_file, GW_file, con_GW_file):
 
 
 # @ray.remote
-def compute_super_S(out, T_file, con_T_file, GW_file, con_GW_file, X_file, con_X_file):
+def compute_super_S(
+    out: str,
+    T_file: str,
+    con_T_file: str,
+    GW_file: str,
+    con_GW_file: str,
+    X_file: str,
+    con_X_file: str,
+) -> None:
+    """Compute the joint S estimators combining single field ones.
+
+    Parameters
+    ----------
+    out : str
+        The output file.
+    T_file : str
+        The file containing the TT S estimators.
+    con_T_file : str
+        The file containing the TT S estimators for the constrained case.
+    GW_file : str
+        The file containing the GWGW S estimators.
+    con_GW_file : str
+        The file containing the GWGW S estimators for the constrained case.
+    X_file : str
+        The file containing the TGW S estimators.
+    con_X_file : str
+        The file containing the TGW S estimators for the constrained case.
+    """
+
     start = time.time()
 
     with open(T_file, "rb") as pickle_file:
@@ -484,13 +697,31 @@ def compute_super_S(out, T_file, con_T_file, GW_file, con_GW_file, X_file, con_X
 
 
 def save_optimal(
-    uncon_file,
-    con_file,
-    lmax,
-    step=1,
-    thrshld=99.5,
-    rounding=int(0.01 * 100),
-):
+    uncon_file: str,
+    con_file: str,
+    lmax: int,
+    step: int = 1,
+    thrshld: float = 99.5,
+    rounding: int = int(0.01 * 100),
+) -> None:
+    """Find and save the optimal angular ranges.
+
+    Parameters
+    ----------
+    uncon_file : str
+        The file containing the unconstrained S estimators.
+    con_file : str
+        The file containing the constrained S estimators.
+    lmax : int
+        The maximum multipole of the S estimators.
+    step : int, optional
+        Incremental step of the angles, by default 1
+    thrshld : float, optional
+        The threshold of the percentiles, by default 99.5
+    rounding : int, optional
+        The rounding of the PDs obtained, by default int(0.01 * 100)
+    """
+
     with open(uncon_file, "rb") as pickle_file:
         uncon = pickle.load(pickle_file)
     with open(con_file, "rb") as pickle_file:
@@ -529,20 +760,52 @@ def save_optimal(
 
 
 def optimal_ang(
-    uncon_file,
-    con_file,
-    lmax,
-    field,
-    lab,
-    cmap,
-    fig_dir,
-    step=1,
-    thrshld=99.5,
-    rounding=int(0.01 * 100),
-    step_mesh=0.05,
-    savefig=False,
-    show=True,
+    uncon_file: str,
+    con_file: str,
+    lmax: int,
+    field: str,
+    lab: str,
+    cmap: str,
+    fig_dir: str,
+    *,
+    step: int = 1,
+    thrshld: float = 99.5,
+    rounding: int = int(0.01 * 100),
+    step_mesh: float = 0.05,
+    savefig: bool = False,
+    show: bool = True,
 ):
+    """Plot the optimal angular ranges.
+
+    Parameters
+    ----------
+    uncon_file : str
+        The file containing the unconstrained S estimators.
+    con_file : str
+        The file containing the constrained S estimators.
+    lmax : int
+        The maximum multipole of the S estimators.
+    field : str
+        The field to plot.
+    lab : str
+        The label of the field.
+    cmap : str
+        The colormap to use.
+    fig_dir : str
+        The directory to save the figure.
+    step : int, optional
+        Incremental step of the angles, by default 1
+    thrshld : float, optional
+        The threshold of the percentiles, by default 99.5
+    rounding : int, optional
+        The rounding of the PDs obtained, by default int(0.01 * 100)
+    step_mesh : float, optional
+        The step of the meshgrid, by default 0.05
+    savefig : bool, optional
+        Whether to save the figure, by default False
+    show : bool, optional
+        Whether to show the figure, by default True
+    """
     plt.style.use("default")
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -642,18 +905,46 @@ def optimal_ang(
 
 
 def S_val(
-    uncon_file,
-    lmax,
-    field,
-    lab,
-    cmap,
-    fig_dir,
-    unit="",
-    vmin=False,
-    step=1,
-    savefig=False,
-    show=True,
-):
+    uncon_file: str,
+    lmax: int,
+    field: str,
+    lab: str,
+    cmap: LinearSegmentedColormap,
+    fig_dir: Path,
+    *,
+    unit: str = "",
+    vmin: bool = False,
+    step: int = 1,
+    savefig: bool = False,
+    show: bool = True,
+) -> None:
+    """Plot the values of S for a given field.
+
+    Parameters
+    ----------
+    uncon_file : str
+        The path to the pickle file of the unconstrained S values.
+    lmax : int
+        The maximum l value.
+    field : str
+        The field to consider.
+    lab : str
+        The label of the field.
+    cmap : matplotlib.colors.LinearSegmentedColormap
+        The colormap.
+    fig_dir : pathlib.Path
+        The directory to save the figure.
+    unit : str, optional
+        The unit of the field, by default ""
+    vmin : bool, optional
+        Whether to set the minimum value of the colorbar to 85% of the maximum value, by default False
+    step : int, optional
+        The step of the meshgrid, by default 1
+    savefig : bool, optional
+        Whether to save the figure, by default False
+    show : bool, optional
+        Whether to show the figure, by default True
+    """
     plt.style.use("default")
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -712,7 +1003,25 @@ def S_val(
     return
 
 
-def summing(out, file_uncon, file_con, mask, norm=True):
+def summing(
+    out: str, file_uncon: str, file_con: str, mask: np.ndarray, *, norm: bool = True
+):
+    """Sum the S estimators over angular configurations.
+
+    Parameters
+    ----------
+    out : str
+        The path to the output directory.
+    file_uncon : str
+        The path to the unconstrained pickle file.
+    file_con : str
+        The path to the constrained pickle file.
+    mask : np.ndarray
+        The mask of the field.
+    norm : bool, optional
+        Whether to normalize the constrained array by the mean of the unconstrained array, by default True
+    """
+
     start = time.time()
     if file_uncon == file_con:
         with open(file_uncon, "rb") as pickle_file:
@@ -740,14 +1049,37 @@ def summing(out, file_uncon, file_con, mask, norm=True):
     return
 
 
-def plot_gauss(data, cmb, label="Insert Label", verbose=False, **kwargs):
+def plot_gauss(
+    data: np.ndarray,
+    cmb: float,
+    *,
+    label: str = "Insert Label",
+    verbose: bool = False,
+    **kwargs: dict,
+) -> None:
+    """Plot Gaussian fit of some data.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The data to plot.
+    cmb : float
+        The value of the CMB.
+    label : str, optional
+        The label of the plot, by default "Insert Label"
+    verbose : bool, optional
+        Whether to print the mean, sigma and compatibility, by default False
+    **kwargs : dict
+        The matplotlib kwargs.
+    """
+
     (mu, sigma) = norm.fit(data)
     x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 100)
     y = stats.norm.pdf(x, mu, sigma)
 
     plt.plot(x, y, label=label, **kwargs)
 
-    if verbose == True:
+    if verbose:
         print(
             "Sigma CV = ",
             sigma,
@@ -761,7 +1093,18 @@ def plot_gauss(data, cmb, label="Insert Label", verbose=False, **kwargs):
     return
 
 
-def count(array, obs="OBSERVABLE", ref=None):
+def count(array: np.ndarray, obs: str = "OBSERVABLE", ref: float = None) -> None:
+    """Count the number of elements above 3 sigma and above a certain reference value.
+
+    Parameters
+    ----------
+    array : np.ndarray
+        The array to count.
+    obs : str, optional
+        The name of the observable, by default "OBSERVABLE"
+    ref : float, optional
+        The reference value, by default None
+    """
     if ref is None:
         print(
             rf"*--> For {obs}, the {round(np.mean(array > 3) * 100, 2)}% is above 3 sigma"
@@ -784,26 +1127,57 @@ def count(array, obs="OBSERVABLE", ref=None):
     return
 
 
-def read(file):
+def read(file: str) -> Any:
+    """Read a pickle file."""
     with open(file, "rb") as pickle_file:
-        res = pickle.load(pickle_file)
-    return res
+        return pickle.load(pickle_file)
 
 
 def plot_cumulative_S(
-    uncon,
-    con,
-    masked_uncon,
-    masked_con,
-    nbins,
-    lmax,
-    field,
-    lab,
-    fig_dir,
-    unit="",
-    concl=False,
-    savefig=False,
-):
+    uncon: np.ndarray,
+    con: np.ndarray,
+    masked_uncon: np.ndarray,
+    masked_con: np.ndarray,
+    nbins: int,
+    lmax: int,
+    field: str,
+    lab: str,
+    fig_dir: str,
+    *,
+    unit: str = "",
+    concl: bool = False,
+    savefig: bool = False,
+) -> None:
+    """Plot the cumulative S estimators for a certain field.
+
+    Parameters
+    ----------
+    uncon : array_like
+        Unconstrained realizations.
+    con : array_like
+        Constrained realizations.
+    masked_uncon : array_like
+        Unconstrained realizations with masked pixels.
+    masked_con : array_like
+        Constrained realizations with masked pixels.
+    nbins : int
+        Number of bins.
+    lmax : int
+        Maximum multipole.
+    field : str
+        Field name.
+    lab : str
+        Label for the field.
+    fig_dir : str
+        Directory where to save figures.
+    unit : str, optional
+        Unit of the field.
+    concl : bool, optional
+        If True, add conclusion to the figure in the form of shaded area corresponding to different conclusions.
+    savefig : bool, optional
+        If True, save figure.
+    """
+
     plt.style.use("default")
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -868,7 +1242,7 @@ def plot_cumulative_S(
         upper_con = np.percentile(np.log10(masked_con), 99.5)
 
         xlim = ax2.get_xlim()
-        ax2.autoscale(False)
+        ax2.autoscale(enable=False)
 
         ax.set_xlim(10 ** np.array(ax2.get_xlim()))
 
@@ -909,15 +1283,6 @@ def plot_cumulative_S(
                 alpha=alpha,
             )
 
-    # func.plot_gauss(
-    #     np.log10(uncon),
-    #     (masked_con),
-    #     label="Gaussian fit",
-    #     color="darkorange",
-    #     ls="--",
-    #     verbose=False,
-    # )
-
     ax.tick_params(
         direction="in", which="major", labelsize=14, width=1.5, length=5, zorder=101
     )
@@ -934,13 +1299,11 @@ def plot_cumulative_S(
     ax2.tick_params(direction="in", which="both", labelsize=12, width=0, zorder=101)
 
     ax.set_xlabel(
-        r"$\sum_{\theta_{\rm min}, \theta_{\rm max}}$"
-        + rf"$S^{{\rm {lab}}}_{{\theta_{{\rm min}}, \theta_{{\rm max}}}}$"
-        + unit,
+        rf"$\sum_{{\theta_{{\rm min}}, \theta_{{\rm max}}}}S^{{\rm {lab}}}_{{\theta_{{\rm min}}, \theta_{{\rm max}}}}$ {unit}",
         fontsize=17,
     )
     ax.set_ylabel("PDF", fontsize=17)
-    leg = ax2.legend(
+    ax2.legend(
         loc="best", frameon=True, framealpha=1, fancybox=True, ncol=1, fontsize=14
     )
     plt.tight_layout()
@@ -952,14 +1315,35 @@ def plot_cumulative_S(
 
 
 def save_signi(
-    uncon,
-    con,
-    masked_con,
-    field,
-    signi_dict,
-    smica=2,
-    masked_smica=3,
-):
+    uncon: np.ndarray,
+    con: np.ndarray,
+    masked_con: np.ndarray,
+    field: np.ndarray,
+    signi_dict: dict,
+    smica: float = 2,
+    masked_smica: float = 3,
+) -> None:
+    """
+    Save significance values from the data
+
+    Parameters
+    ----------
+    uncon : np.ndarray
+        Unconstrained data
+    con : np.ndarray
+        Constrained data
+    masked_con : np.ndarray
+        Masked constrained data
+    field : np.ndarray
+        The field
+    signi_dict : dict
+        The dictionary where to store significances above SMICA ones
+    smica : float, optional
+        SMICA value of significance
+    masked_smica : float, optional
+        Masked SMICA value of significance
+    """
+
     uncon, _ = uncon
     con, _ = con
     masked_con, _ = masked_con
@@ -980,18 +1364,47 @@ def save_signi(
 
 
 def plot_signi(
-    uncon,
-    con,
-    masked_con,
-    nbins,
-    lmax,
-    field,
-    lab,
-    fig_dir,
-    smica=2,
-    masked_smica=3,
-    savefig=False,
-):
+    uncon: np.ndarray,
+    con: np.ndarray,
+    masked_con: np.ndarray,
+    nbins: int,
+    lmax: int,
+    field: str,
+    lab: str,
+    fig_dir: str,
+    *,
+    smica: int = 2,
+    masked_smica: int = 3,
+    savefig: bool = False,
+) -> None:
+    """Plot significance of the unconstrained and the constrained (with and without masking) realizations.
+
+    Parameters
+    ----------
+    uncon : np.ndarray
+        unconstrained field
+    con : np.ndarray
+        constrained field
+    masked_con : np.ndarray
+        constrained field with masking
+    nbins : int
+        number of bins for the histogram
+    lmax : int
+        maximum spherical harmonic degree
+    field : str
+        name of the field
+    lab : str
+        label for the field
+    fig_dir : str
+        directory where to save the figure
+    smica : int, optional
+        smica value for the unconstrained field
+    masked_smica : int, optional
+        smica value for the constrained field with masking
+    savefig : bool, optional
+        if True, save the figure
+    """
+
     plt.style.use("default")
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -1001,41 +1414,7 @@ def plot_signi(
     smica, signi_smica = smica
     masked_smica, signi_masked_smica = masked_smica
 
-    # ax.hist(
-    #     (uncon),
-    #     bins=nbins,
-    #     histtype="step",
-    #     lw=2,
-    #     color="red",
-    #     density=True,
-    #     label="Uncontr.",
-    # )
-    # ax.hist(
-    #     signi_uncon,
-    #     bins=nbins,
-    #     histtype="step",
-    #     lw=1.5,
-    #     ls="--",
-    #     color="magenta",
-    #     density=True,
-    #     # label="Uncontr.",
-    # )
-
     if field == "TT":
-        # ax.axvline(
-        #     (signi_con),
-        #     lw=1.5,
-        #     ls="--",
-        #     color="blue",
-        #     # label="SMICA",
-        # )
-        # ax.axvline(
-        #     (signi_masked_con),
-        #     lw=1.5,
-        #     ls="--",
-        #     color="lime",
-        #     # label="Masked SMICA",
-        # )
         ax.axvline(
             (con),
             lw=2,
@@ -1051,26 +1430,6 @@ def plot_signi(
     else:
         hist1, bins = np.histogram(con, bins=nbins, density=True)
         hist2, bins = np.histogram(masked_con, bins=nbins, density=True)
-        # ax.hist(
-        #     (signi_con),
-        #     bins=nbins,
-        #     histtype="step",
-        #     lw=1.5,
-        #     ls="--",
-        #     color="blue",
-        #     density=True,
-        #     # label="Contr.",
-        # )
-        # ax.hist(
-        #     (signi_masked_con),
-        #     bins=nbins,
-        #     histtype="step",
-        #     lw=1.5,
-        #     ls="--",
-        #     color="lime",
-        #     density=True,
-        #     # label="Masked contr.",
-        # )
         ax.hist(
             (con),
             bins=nbins,
@@ -1094,16 +1453,6 @@ def plot_signi(
 
         ax.axvline(smica, lw=1.5, color="black", label="SMICA", ls=":")
         ax.axvline(masked_smica, lw=1.5, color="black", label="Masked SMICA", ls="--")
-        # ax.axvline(3.89, lw=1.5, color="black", ls="--")
-
-    # func.plot_gauss(
-    #     (uncon),
-    #     (masked_con),
-    #     label="Gaussian fit",
-    #     color="darkorange",
-    #     ls="--",
-    #     verbose=False,
-    # )
 
     ax.tick_params(
         direction="in", which="major", labelsize=14, width=1.5, length=5, zorder=101
@@ -1117,7 +1466,7 @@ def plot_signi(
 
     ax.set_xlabel(rf"Significance with $S^{{\rm {lab}}}\ [\sigma]$", fontsize=15)
     ax.set_ylabel("PDF", fontsize=17)
-    leg = ax.legend(
+    ax.legend(
         loc="upper right",
         frameon=True,
         framealpha=1,
@@ -1138,18 +1487,47 @@ def plot_signi(
 
 
 def plot_hist(
-    opt_angs,
-    field,
-    lab,
-    lmax,
-    file_uncon,
-    file_con,
-    fig_dir,
-    step=1,
-    nbins=30,
-    concl=False,
-    savefig=False,
-):
+    opt_angs: dict,
+    field: str,
+    lab: str,
+    lmax: int,
+    file_uncon: str,
+    file_con: str,
+    fig_dir: str,
+    *,
+    step: int = 1,
+    nbins: int = 30,
+    concl: bool = False,
+    savefig: bool = False,
+) -> None:
+    """Plot histogram of the optimal angles.
+
+    Parameters
+    ----------
+    opt_angs : dict
+        optimal angles
+    field : str
+        name of the field
+    lab : str
+        label for the field
+    lmax : int
+        maximum spherical harmonic degree
+    file_uncon : str
+        path to the file containing the unconstrained realizations
+    file_con : str
+        path to the file containing the constrained realizations
+    fig_dir : str
+        directory where to save the figure
+    step : int, optional
+        step for the histogram
+    nbins : int, optional
+        number of bins for the histogram
+    concl : bool, optional
+        if True, plot the histogram of the constrained realization
+    savefig : bool, optional
+        if True, save the figure
+    """
+
     plt.style.use("default")
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -1232,7 +1610,7 @@ def plot_hist(
     con = 0
 
     xlim = ax2.get_xlim()
-    ax2.autoscale(False)
+    ax2.autoscale(enable=False)
 
     lower_axis = xlim[0]
     upper_axis = xlim[1]
@@ -1291,7 +1669,7 @@ def plot_hist(
     [x.set_linewidth(1) for x in ax.spines.values()]
 
     ax.set_xlabel(
-        r"$S^{%s}_{%s^\circ, %s^\circ}\ [\mu K^4]$" % (lab, the_min, the_max),
+        rf"$S^{{{lab}}}_{{{the_min}^\circ, {the_max}^\circ}}\ [\mu K^4]$",
         fontsize=17,
     )
     ax.set_ylabel("Counts", fontsize=17)
@@ -1310,18 +1688,51 @@ def plot_hist(
 
 
 def plot_joint_hist(
-    opt_angs,
-    field,
-    lab,
-    lmax,
-    file_uncon,
-    file_con,
-    fig_dir,
-    concl=False,
-    step=1,
-    nbins=30,
-    savefig=False,
-):
+    opt_angs: dict,
+    field: str,
+    lab: str,
+    lmax: int,
+    file_uncon: str,
+    file_con: str,
+    fig_dir: str,
+    *,
+    concl: bool = False,
+    step: int = 1,
+    nbins: int = 30,
+    savefig: bool = False,
+) -> None:
+    """
+    Plot the joint histogram for a given field with the optimal angular
+    ranges for the unconstrained and constrained case.
+
+    Parameters
+    ----------
+    opt_angs : dict
+        Dictionary with the optimal angular ranges for the unconstrained
+        and constrained case.
+    field : str
+        Name of the field to be plotted.
+    lab : str
+        Name of the field in latex format.
+    lmax : int
+        Maximum multipole moment.
+    file_uncon : str
+        Path to the pickle file containing the unconstrained angular
+        power spectrum.
+    file_con : str
+        Path to the pickle file containing the constrained angular
+        power spectrum.
+    fig_dir : str
+        Path to the directory where the figure will be saved.
+    concl : bool, optional
+        If True, the confidence intervals will be plotted.
+    step : int, optional
+        Step size for the angular range.
+    nbins : int, optional
+        Number of bins for the histogram.
+    savefig : bool, optional
+        If True, the figure will be saved.
+    """
     plt.style.use("default")
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -1391,7 +1802,7 @@ def plot_joint_hist(
     con = 0
 
     xlim = ax2.get_xlim()
-    ax2.autoscale(False)
+    ax2.autoscale(enable=False)
 
     ax.set_ylim(0, np.max([hist1, hist2]) + 400)
     ax.set_xlim(10 ** np.array(ax2.get_xlim()))
@@ -1447,7 +1858,7 @@ def plot_joint_hist(
     [x.set_linewidth(1) for x in ax.spines.values()]
 
     ax.set_xlabel(
-        r"$S^{%s}_{%s^\circ, %s^\circ}$" % (lab, the_min, the_max),
+        rf"$S^{{{lab}}}_{{{the_min}^\circ, {the_max}^\circ}}$",
         fontsize=17,
     )
     ax.set_ylabel("Counts", fontsize=17)
@@ -1466,8 +1877,45 @@ def plot_joint_hist(
 
 
 def compute_ang_corr(
-    uncon, con, CLs, field, lab, P, lmax, fig_dir, step=1, savefig=False
-):
+    uncon: np.ndarray,
+    con: np.ndarray,
+    CLs: dict,
+    field: str,
+    lab: str,
+    P: np.ndarray,
+    lmax: int,
+    fig_dir: str,
+    *,
+    step: int = 1,
+    savefig: bool = False,
+) -> None:
+    """
+    Compute angular correlation functions and plots them.
+
+    Parameters
+    ----------
+    uncon : np.ndarray
+        Array of the unconstrained realizations.
+    con : np.ndarray
+        Array of the constrained realizations.
+    CLs : dict
+        Dictionary of the theoretical angular power spectra.
+    field : str
+        The field considered.
+    lab : str
+        The label of the field.
+    P : np.ndarray
+        The array of Legendre polynomials.
+    lmax : int
+        The maximum multipole of the angular correlation function.
+    fig_dir : str
+        The folder where to save the plots.
+    step : int, optional
+        The width of step in the angular domain.
+    savefig : bool, optional
+        Whether to save the plots.
+    """
+
     ell = np.arange(0, lmax + 1, 1)
     start = int(180 / (lmax - 1))
     angs = np.arange(start, 180 + step, step)
@@ -1595,7 +2043,7 @@ def compute_ang_corr(
         ),
     ]
 
-    leg = ax.legend(
+    ax.legend(
         handles=legend_elements,
         loc="upper left",
         frameon=True,
@@ -1611,8 +2059,40 @@ def compute_ang_corr(
 
 
 def compute_ang_corr_TT(
-    uncon, con, masked_con, CLs, P, lmax, fig_dir, step=1, savefig=False
-):
+    uncon: np.ndarray,
+    con: np.ndarray,
+    masked_con: np.ndarray,
+    CLs: dict,
+    P: np.ndarray,
+    lmax: int,
+    fig_dir: str,
+    *,
+    step: int = 1,
+    savefig: bool = False,
+) -> None:
+    """
+    Compute angular correlation functions for TT and plots them.
+
+    Parameters
+    ----------
+    uncon : np.ndarray
+        Array of the unconstrained realizations.
+    con : np.ndarray
+        Array of the constrained realizations.
+    CLs : dict
+        Dictionary of the theoretical angular power spectra.
+    P : np.ndarray
+        The array of Legendre polynomials.
+    lmax : int
+        The maximum multipole of the angular correlation function.
+    fig_dir : str
+        The folder where to save the plots.
+    step : int, optional
+        The width of step in the angular domain.
+    savefig : bool, optional
+        Whether to save the plots.
+    """
+
     ell = np.arange(0, lmax + 1, 1)
     start = int(180 / (lmax - 1))
     angs = np.arange(start, 180 + step, step)
@@ -1739,7 +2219,7 @@ def compute_ang_corr_TT(
         ),
     ]
 
-    leg = ax.legend(
+    ax.legend(
         handles=legend_elements,
         loc="upper left",
         frameon=True,
@@ -1754,7 +2234,18 @@ def compute_ang_corr_TT(
         plt.savefig(fig_dir.joinpath(f"ang_corr_TT_lmax{lmax}.png"), dpi=150)
 
 
-def pvalue(uncon, con):
+def pvalue(uncon: np.ndarray, con: np.ndarray) -> float:
+    """Compute the p-value for a given set of constrained and unconstraiend realizations.
+
+    Parameters
+    ----------
+        uncon : np.ndarray
+            Array of the unconstrained realizations.
+        con : np.ndarray
+            Array of the constrained realizations.
+
+    """
+
     res = np.zeros(len(uncon))
     if isinstance(con, np.float64):
         res = np.mean(uncon < con) * 100
@@ -1766,15 +2257,15 @@ def pvalue(uncon, con):
 
 
 @ray.remote
-def sigmas(uncon, con):
+def sigmas(uncon: np.ndarray, con: np.ndarray) -> tuple:
     """Compute the sigma values for a given constraint.
 
-    Args:
-        uncon (float): The unconstrained value.
-        con (float): The constraint value.
-
-    Returns:
-        float: The sigma value.
+    Parameters
+    ----------
+        uncon : np.ndarray
+            Array of the unconstrained realizations.
+        con : np.ndarray
+            Array of the constrained realizations.
     """
     # Convert the input values to log10 space.
     con = np.log10(con)
@@ -1819,7 +2310,19 @@ def sigmas(uncon, con):
     return res, np.abs(mu - con) / sigma
 
 
-def save_sigmas(outfile, uncon, con):
+def save_sigmas(outfile: str, uncon: np.ndarray, con: np.ndarray) -> None:
+    """Compute the sigma values and save them to a file.
+
+    Parameters
+    ----------
+        outfile : str
+            Path to the output file.
+        uncon : np.ndarray
+            Array of the unconstrained realizations.
+        con : np.ndarray
+            Array of the constrained realizations.
+    """
+
     start = time.time()
     sigma = ray.get(sigmas.remote(read(uncon), read(con)))
     with open(outfile, "wb") as pickle_file:
@@ -1829,178 +2332,191 @@ def save_sigmas(outfile, uncon, con):
     return
 
 
-def plot_pvalue(
-    uncon,
-    con,
-    masked_con,
-    nbins,
-    lmax,
-    field,
-    lab,
-    fig_dir,
-    smica=2,
-    masked_smica=3,
-    concl=False,
-    savefig=False,
-):
-    plt.style.use("default")
-    fig, ax = plt.subplots(figsize=(7, 5))
+# def plot_pvalue(
+#     uncon,
+#     con,
+#     masked_con,
+#     nbins,
+#     lmax,
+#     field,
+#     lab,
+#     fig_dir,
+#     *,
+#     smica=2,
+#     masked_smica=3,
+#     concl=False,
+#     savefig=False,
+# ):
+#     plt.style.use("default")
+#     fig, ax = plt.subplots(figsize=(7, 5))
 
-    ax.set(xscale="log", yscale="linear")
-    ax2 = ax.twiny()
+#     ax.set(xscale="log", yscale="linear")
+#     ax2 = ax.twiny()
 
-    hist1, bins = np.histogram(np.log10(masked_con), bins=nbins, density=True)
-    hist2, bins = np.histogram(np.log10(con), bins=nbins, density=True)
+#     hist1, bins = np.histogram(np.log10(masked_con), bins=nbins, density=True)
+#     hist2, bins = np.histogram(np.log10(con), bins=nbins, density=True)
 
-    sigmas = [np.log10(4.550 / 2), np.log10(0.270 / 2), np.log10(0.006 / 2)]
-    styles = ["--", "-.", ":"]
+#     sigmas = [np.log10(4.550 / 2), np.log10(0.270 / 2), np.log10(0.006 / 2)]
 
-    # for i, val in enumerate(sigmas):
-    #     ax2.axvline(val, lw=1.5, color="goldenrod", ls=styles[i])
-    # ax2.text(val, 1.3, rf"{i+2}$\sigma$", color="goldenrod")
+#     # for i, val in enumerate(sigmas):
+#     #     ax2.axvline(val, lw=1.5, color="goldenrod", ls=styles[i])
+#     # ax2.text(val, 1.3, rf"{i+2}$\sigma$", color="goldenrod")
 
-    # ax.axvline(
-    #     np.log10(4.550 / 2), lw=1.5, color="goldenrod", label=r"2$\sigma$", ls="-"
-    # )
-    # ax.axvline(
-    #     np.log10(0.270 / 2), lw=1.5, color="goldenrod", label=r"3$\sigma$", ls="--"
-    # )
-    # ax.axvline(
-    #     np.log10(0.006 / 2), lw=1.5, color="goldenrod", label=r"4$\sigma$", ls=":"
-    # )
+#     # ax.axvline(
+#     #     np.log10(4.550 / 2), lw=1.5, color="goldenrod", label=r"2$\sigma$", ls="-"
+#     # )
+#     # ax.axvline(
+#     #     np.log10(0.270 / 2), lw=1.5, color="goldenrod", label=r"3$\sigma$", ls="--"
+#     # )
+#     # ax.axvline(
+#     #     np.log10(0.006 / 2), lw=1.5, color="goldenrod", label=r"4$\sigma$", ls=":"
+#     # )
 
-    # ax2.hist(
-    #     np.log10(uncon),
-    #     bins=nbins,
-    #     histtype="step",
-    #     lw=2,
-    #     color="red",
-    #     density=True,
-    #     label="Uncontr.",
-    # )
+#     # ax2.hist(
+#     #     np.log10(uncon),
+#     #     bins=nbins,
+#     #     histtype="step",
+#     #     lw=2,
+#     #     color="red",
+#     #     density=True,
+#     #     label="Uncontr.",
+#     # )
 
-    if field == "TT":
-        ax2.axvline(
-            np.log10(con),
-            lw=2,
-            color="dodgerblue",
-            label="SMICA",
-        )
-        ax2.axvline(
-            np.log10(masked_con),
-            lw=2,
-            color="forestgreen",
-            label="Masked SMICA",
-        )
-    else:
-        ax2.hist(
-            np.log10(con),
-            bins=nbins,
-            histtype="step",
-            lw=2,
-            color="dodgerblue",
-            density=True,
-            label="Contr.",
-        )
-        ax2.hist(
-            np.log10(masked_con),
-            bins=nbins,
-            histtype="step",
-            lw=2,
-            color="forestgreen",
-            density=True,
-            label="Masked contr.",
-        )
-        ax2.axvline(np.log10(smica), lw=1.5, c="k", label="SMICA", ls=":")
-        ax2.axvline(
-            np.log10(masked_smica), lw=1.5, c="k", label="Masked SMICA", ls="--"
-        )
+#     if field == "TT":
+#         ax2.axvline(
+#             np.log10(con),
+#             lw=2,
+#             color="dodgerblue",
+#             label="SMICA",
+#         )
+#         ax2.axvline(
+#             np.log10(masked_con),
+#             lw=2,
+#             color="forestgreen",
+#             label="Masked SMICA",
+#         )
+#     else:
+#         ax2.hist(
+#             np.log10(con),
+#             bins=nbins,
+#             histtype="step",
+#             lw=2,
+#             color="dodgerblue",
+#             density=True,
+#             label="Contr.",
+#         )
+#         ax2.hist(
+#             np.log10(masked_con),
+#             bins=nbins,
+#             histtype="step",
+#             lw=2,
+#             color="forestgreen",
+#             density=True,
+#             label="Masked contr.",
+#         )
+#         ax2.axvline(np.log10(smica), lw=1.5, c="k", label="SMICA", ls=":")
+#         ax2.axvline(
+#             np.log10(masked_smica), lw=1.5, c="k", label="Masked SMICA", ls="--"
+#         )
 
-    ax2.autoscale(False)
+#     ax2.autoscale(enable=False)
 
-    ax.set_ylim(0, np.max([hist1, hist2]) + 0.7)
-    ax.set_xlim(10 ** np.array(ax2.get_xlim()))
+#     ax.set_ylim(0, np.max([hist1, hist2]) + 0.7)
+#     ax.set_xlim(10 ** np.array(ax2.get_xlim()))
 
-    color = "black"
-    alpha = 0.07
-    low = np.log10(0.001)
-    if concl:
-        ax2.fill_between(
-            x=np.linspace(low, np.log10(31.73 / 2), num=100),
-            y1=0,
-            y2=np.max([hist1, hist2]) + 1,
-            color=color,
-            alpha=alpha,
-        )
+#     color = "black"
+#     alpha = 0.07
+#     low = np.log10(0.001)
+#     if concl:
+#         ax2.fill_between(
+#             x=np.linspace(low, np.log10(31.73 / 2), num=100),
+#             y1=0,
+#             y2=np.max([hist1, hist2]) + 1,
+#             color=color,
+#             alpha=alpha,
+#         )
 
-        ax2.fill_between(
-            x=np.linspace(low, sigmas[0], num=100),
-            y1=0,
-            y2=np.max([hist1, hist2]) + 1,
-            color=color,
-            alpha=alpha,
-        )
+#         ax2.fill_between(
+#             x=np.linspace(low, sigmas[0], num=100),
+#             y1=0,
+#             y2=np.max([hist1, hist2]) + 1,
+#             color=color,
+#             alpha=alpha,
+#         )
 
-        ax2.fill_between(
-            x=np.linspace(low, sigmas[1], num=100),
-            y1=0,
-            y2=np.max([hist1, hist2]) + 1,
-            color=color,
-            alpha=alpha,
-        )
+#         ax2.fill_between(
+#             x=np.linspace(low, sigmas[1], num=100),
+#             y1=0,
+#             y2=np.max([hist1, hist2]) + 1,
+#             color=color,
+#             alpha=alpha,
+#         )
 
-        ax2.fill_between(
-            x=np.linspace(low, sigmas[2], num=100),
-            y1=0,
-            y2=np.max([hist1, hist2]) + 1,
-            color=color,
-            alpha=alpha,
-        )
+#         ax2.fill_between(
+#             x=np.linspace(low, sigmas[2], num=100),
+#             y1=0,
+#             y2=np.max([hist1, hist2]) + 1,
+#             color=color,
+#             alpha=alpha,
+#         )
 
-    # func.plot_gauss(
-    #     (uncon),
-    #     (masked_con),
-    #     label="Gaussian fit",
-    #     color="darkorange",
-    #     ls="--",
-    #     verbose=False,
-    # )
-    ax.tick_params(
-        direction="in", which="major", labelsize=14, width=1.5, length=5, zorder=101
-    )
-    ax.tick_params(
-        direction="in", which="minor", labelsize=14, width=1.5, length=3, zorder=101
-    )
-    ax.yaxis.set_ticks_position("both")
-    ax.xaxis.set_ticks_position("both")
-    [x.set_linewidth(1.5) for x in ax.spines.values()]
+#     # func.plot_gauss(
+#     #     (uncon),
+#     #     (masked_con),
+#     #     label="Gaussian fit",
+#     #     color="darkorange",
+#     #     ls="--",
+#     #     verbose=False,
+#     # )
+#     ax.tick_params(
+#         direction="in", which="major", labelsize=14, width=1.5, length=5, zorder=101
+#     )
+#     ax.tick_params(
+#         direction="in", which="minor", labelsize=14, width=1.5, length=3, zorder=101
+#     )
+#     ax.yaxis.set_ticks_position("both")
+#     ax.xaxis.set_ticks_position("both")
+#     [x.set_linewidth(1.5) for x in ax.spines.values()]
 
-    # ax.set_ylim(0, np.max([hist1, hist2]) + 1)
-    ax2.set_xticklabels([])
-    ax2.set_xlabel("")
-    ax2.tick_params(direction="in", which="both", labelsize=12, width=0, zorder=101)
+#     # ax.set_ylim(0, np.max([hist1, hist2]) + 1)
+#     ax2.set_xticklabels([])
+#     ax2.set_xlabel("")
+#     ax2.tick_params(direction="in", which="both", labelsize=12, width=0, zorder=101)
 
-    ax.set_xlabel(rf"p-value with $S^{{\rm {lab}}}\ [\%]$", fontsize=15)
-    ax.set_ylabel("PDF", fontsize=17)
-    leg = ax2.legend(
-        loc="best", frameon=True, framealpha=1, fancybox=True, ncol=1, fontsize=14
-    )
-    plt.tight_layout()
-    if savefig:
-        plt.savefig(fig_dir.joinpath("pvalue_" + field + f"_lmax{lmax}.png"), dpi=150)
-    if field == "TT":
-        print(f"*--> Full-sky SMICA has a p-value of {round(con, 2)} %")
-        print(f"*--> Masked SMICA has a p-value of {round(masked_con, 2)} %")
-    else:
-        count_down(np.log10(con), obs=field, ref=np.log10(smica))
-        count_down(
-            np.log10(masked_con), obs="Masked " + field, ref=np.log10(masked_smica)
-        )
+#     ax.set_xlabel(rf"p-value with $S^{{\rm {lab}}}\ [\%]$", fontsize=15)
+#     ax.set_ylabel("PDF", fontsize=17)
+#     ax2.legend(
+#         loc="best", frameon=True, framealpha=1, fancybox=True, ncol=1, fontsize=14
+#     )
+#     plt.tight_layout()
+#     if savefig:
+#         plt.savefig(fig_dir.joinpath("pvalue_" + field + f"_lmax{lmax}.png"), dpi=150)
+#     if field == "TT":
+#         print(f"*--> Full-sky SMICA has a p-value of {round(con, 2)} %")
+#         print(f"*--> Masked SMICA has a p-value of {round(masked_con, 2)} %")
+#     else:
+#         count_down(np.log10(con), obs=field, ref=np.log10(smica))
+#         count_down(
+#             np.log10(masked_con), obs="Masked " + field, ref=np.log10(masked_smica)
+#         )
 
-    return
+#     return
 
 
-def count_down(array, obs="OBSERVABLE", ref=None):
+def count_down(array: np.ndarray, obs: str = "OBSERVABLE", ref: float = None) -> None:
+    """
+    Count the number of elements in an array that are below a reference value.
+
+    Parameters
+    ----------
+    array : ndarray
+        Array to be checked.
+    obs : str, optional
+        Name of the observable.
+    ref : float, optional
+        Reference value. If None, 0.1% is used. Default: None.
+    """
+
     if ref is None:
         print(
             rf"*--> For {obs}, the {round(np.mean(array < 0.1) * 100, 2)}% is below 0.1%"
@@ -2023,7 +2539,19 @@ def count_down(array, obs="OBSERVABLE", ref=None):
     return
 
 
-def downgrade_map(inmap, NSIDEout, fwhmout=None):
+def downgrade_map(inmap: np.ndarray, NSIDEout: int, fwhmout: float=None) -> np.ndarray:
+    """Downgrade a healpix map to a lower resolution map
+
+    Parameters
+    ----------
+    inmap : 1D array
+        healpix map to be downgraded
+    NSIDEout : int
+        NSIDE of output map
+    fwhmout : float, optional
+        fwhm of output map in degrees, if None, then use NSIDE to calculate fwhm
+    """
+
     # get coefficent to covolve with beam and pixel window func
     plout = hp.pixwin(NSIDEout)
     lmax = plout.size - 1

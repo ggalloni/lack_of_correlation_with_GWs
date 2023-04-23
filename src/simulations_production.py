@@ -8,23 +8,34 @@ import pymaster as nmt
 import ray
 from progressbar import ProgressBar
 
+from classes import State
 from functions import mask_TT_un, mask_X_con, mask_X_un
 
 
-def get_SMICA_seeds(CurrentState):
+def get_SMICA_seeds(CurrentState: State) -> np.ndarray:
+    """Get the SMICA seed for the current state.
+
+    Parameters
+    ----------
+    CurrentState : State
+        The current state of the pipeline.
+    """
     lmax = CurrentState.settings.lmax
     cmb_map = CurrentState.cmb_map
     mask = CurrentState.mask
     CLs = CurrentState.CLs
 
+    # Create fullsky SMICA alm
     fullsky_SMICA_alm = hp.map2alm(cmb_map, lmax=lmax, use_pixel_weights=True)
     f_T = nmt.NmtField(mask, [cmb_map])
     masked_SMICA_alm = f_T.get_alms()[0]
 
+    # Create masked SMICA alm
     filt = np.ones(lmax + 1)
     masked_SMICA_alm = hp.almxfl(masked_SMICA_alm, filt)
     masked_SMICA_alm = masked_SMICA_alm[masked_SMICA_alm != 0]
 
+    # Create decoupled SMICA alm
     inv_window = np.linalg.inv(CurrentState.get_window())
     decoupled_SMICA_alm = masked_SMICA_alm @ inv_window
     decoupled_SMICA_seed = hp.almxfl(
@@ -33,6 +44,7 @@ def get_SMICA_seeds(CurrentState):
     decoupled_SMICA_seed[np.isnan(decoupled_SMICA_seed)] = 0
     decoupled_SMICA_seed[np.isinf(decoupled_SMICA_seed)] = 0
 
+    # Create fullsky SMICA seed
     SMICA_seed = hp.almxfl(
         fullsky_SMICA_alm, CLs["tgw"][: lmax + 1] / CLs["tt"][: lmax + 1]
     )
@@ -43,12 +55,37 @@ def get_SMICA_seeds(CurrentState):
     # -------------------------------------------------------------------------------- #
 
 
-def plot_sky(CurrentState, sky_map, unit, scale, name):
-    dpi = 150
-    figsize_inch = 7, 3.5
-    cmap = CurrentState.settings.cmap
+def plot_sky(
+    CurrentState: State,
+    sky_map: np.ndarray,
+    unit: str,
+    scale: float,
+    name: str,
+) -> None:
+    """
+    Plot a sky map.
 
-    fig = plt.figure(figsize=figsize_inch, dpi=dpi)
+    Parameters
+    ----------
+    CurrentState : State
+        Current state of the pipeline.
+    sky_map : np.ndarray
+        Sky map to plot.
+    unit : str
+        Unit of the sky map.
+    scale : float
+        Scale of the sky map.
+    name : str
+        Name of the sky map.
+    """
+    dpi: int = 150
+    figsize_inch: tuple = 7, 3.5
+    cmap: str = CurrentState.settings.cmap
+
+    # Initialize a figure to plot the sky map on
+    fig: plt.Figure = plt.figure(figsize=figsize_inch, dpi=dpi)
+
+    # Plot the sky map
     hp.mollview(
         sky_map,
         fig=fig.number,
@@ -61,7 +98,11 @@ def plot_sky(CurrentState, sky_map, unit, scale, name):
         max=scale,
         bgcolor="none",
     )
+
+    # Add a graticule to the sky map
     hp.graticule(dmer=360, dpar=360, alpha=0)
+
+    # Save the figure to disk if the user requested it
     if CurrentState.settings.savefig:
         plt.savefig(
             CurrentState.settings.dir.joinpath(
@@ -71,17 +112,30 @@ def plot_sky(CurrentState, sky_map, unit, scale, name):
     return
 
 
-def produce_realizations(CurrentState):
-    N = CurrentState.settings.N
+def produce_realizations(CurrentState: State) -> None:
+    """Produce the realizations.
 
-    free_GWGW_realizations = {}
-    free_TT_realizations = {}
-    LCDM_constrained_GWGW_realizations = {}
-    fullsky_constrained_GWGW_realizations = {}
-    masked_constrained_GWGW_realizations = {}
+    Parameters
+    ----------
+    CurrentState : State
+        The current state object.
 
-    CLs = CurrentState.CLs
-    lmax = CurrentState.settings.lmax
+    """
+    # Get number of realizations
+    N: int = CurrentState.settings.N
+
+    # Initialize empty dictionaries for the realizations
+    free_GWGW_realizations: dict = {}
+    free_TT_realizations: dict = {}
+    LCDM_constrained_GWGW_realizations: dict = {}
+    fullsky_constrained_GWGW_realizations: dict = {}
+    masked_constrained_GWGW_realizations: dict = {}
+
+    # Get the current power spectra
+    CLs: dict = CurrentState.CLs
+    lmax: int = CurrentState.settings.lmax
+
+    # Get the SMICA seeds
     SMICA_seed, decoupled_SMICA_seed, fullsky_SMICA_alm, _ = get_SMICA_seeds(
         CurrentState
     )
@@ -160,13 +214,30 @@ def produce_realizations(CurrentState):
 
 
 def compute_fullsky_angular_spectra(
-    CurrentState,
-    free_TT_realizations,
-    free_GWGW_realizations,
-    LCDM_constrained_GWGW_realizations,
-    fullsky_constrained_GWGW_realizations,
-    masked_constrained_GWGW_realizations,
-):
+    CurrentState: State,
+    free_TT_realizations: dict,
+    free_GWGW_realizations: dict,
+    LCDM_constrained_GWGW_realizations: dict,
+    fullsky_constrained_GWGW_realizations: dict,
+    masked_constrained_GWGW_realizations: dict,
+) -> tuple:
+    """Compute the angular spectra for the fullsky realizations
+
+    Parameters
+    ----------
+    CurrentState : State
+        The current state of analysis
+    free_TT_realizations : dict
+        The fullsky free TT realizations
+    free_GWGW_realizations : dict
+        The fullsky free GWGW realizations
+    LCDM_constrained_GWGW_realizations : dict
+        The fullsky LCDM-constrained GWGW realizations
+    fullsky_constrained_GWGW_realizations : dict
+        The fullsky fullsky-constrained GWGW realizations
+    masked_constrained_GWGW_realizations : dict
+        The fullsky masked-constrained GWGW realizations
+    """
     N = CurrentState.settings.N
     lmax = CurrentState.settings.lmax
     _, _, fullsky_SMICA_alm, _ = get_SMICA_seeds(CurrentState)
@@ -231,10 +302,14 @@ def compute_fullsky_angular_spectra(
 
 
 def compute_masked_angular_spectra(
-    CurrentState,
-    free_TT_realizations,
-    masked_constrained_GWGW_realizations,
-):
+    CurrentState: State,
+    free_TT_realizations: dict,
+    masked_constrained_GWGW_realizations: dict,
+) -> tuple:
+    """
+    Compute the masked angular spectra of the free and constrained realizations
+    of the temperature and gravitational wave fields.
+    """
     N = CurrentState.settings.N
 
     cmb_map_id = ray.put(CurrentState.cmb_map)
@@ -291,17 +366,17 @@ def compute_masked_angular_spectra(
 
 
 def saving_spectra(
-    CurrentState,
-    TT_uncon_CL,
-    GWGW_uncon_CL,
-    GWGW_con_CL,
-    masked_GWGW_con_CL,
-    TGW_uncon_CL,
-    TGW_con_CL,
-    masked_TGW_uncon_CL,
-    masked_TGW_con_CL,
-    masked_TT_uncon_CL,
-):
+    CurrentState: State,
+    TT_uncon_CL: np.ndarray,
+    GWGW_uncon_CL: np.ndarray,
+    GWGW_con_CL: np.ndarray,
+    masked_GWGW_con_CL: np.ndarray,
+    TGW_uncon_CL: np.ndarray,
+    TGW_con_CL: np.ndarray,
+    masked_TGW_uncon_CL: np.ndarray,
+    masked_TGW_con_CL: np.ndarray,
+    masked_TT_uncon_CL: np.ndarray,
+) -> None:
     new_data = [
         TT_uncon_CL,
         GWGW_uncon_CL,

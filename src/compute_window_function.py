@@ -1,16 +1,19 @@
-import numpy as np
-import healpy as hp
 import pickle
+
+import healpy as hp
 import matplotlib.pyplot as plt
+import numpy as np
+
+from classes import State
 from functions import (
+    build_window_function,
     integrate_spherical_harmonics,
     integrate_spherical_harmonics_pix,
     integrate_spherical_harmonics_pix_mask,
-    build_window_function,
 )
 
 
-def test_Ylm_intergral(CurrentState):
+def test_Ylm_intergral(CurrentState: State):
     l1, m1 = 2, 1
     l2, m2 = 2, 1
     nside = CurrentState.settings.nside
@@ -34,7 +37,7 @@ def test_Ylm_intergral(CurrentState):
     return
 
 
-def plot_window_function(window_function, CurrentState):
+def plot_window_function(window_function: np.ndarray, CurrentState: State):
     lmax = CurrentState.settings.lmax
     alm_size = hp.Alm.getsize(lmax)
     sizes = [lmax + 1 - m for m in range(lmax + 1)]
@@ -91,7 +94,7 @@ def plot_window_function(window_function, CurrentState):
     return
 
 
-def plot_cutsky_covariance(window_function, CurrentState):
+def plot_cutsky_covariance(window_function: np.ndarray, CurrentState: State):
     lmax = CurrentState.settings.lmax
     CLs = CurrentState.CLs
     alm_size = hp.Alm.getsize(lmax)
@@ -154,7 +157,7 @@ def plot_cutsky_covariance(window_function, CurrentState):
     return
 
 
-def get_window_function(CurrentState):
+def get_window_function(CurrentState: State):
     if CurrentState.settings.debug:
         test_Ylm_intergral(CurrentState)
 
@@ -172,14 +175,14 @@ def get_window_function(CurrentState):
     return window_function
 
 
-def save_window_function(CurrentState, window_function):
+def save_window_function(CurrentState: State, window_function: np.ndarray):
     file = CurrentState.window_file
     with open(file, "wb") as pickle_file:
         pickle.dump(window_function, pickle_file)
     return
 
 
-def main(CurrentState):
+def main(CurrentState: State):
     window = get_window_function(CurrentState)
     save_window_function(CurrentState, window)
     return

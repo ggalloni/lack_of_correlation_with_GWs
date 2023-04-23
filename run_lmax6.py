@@ -17,7 +17,8 @@ from src import (
 )
 
 
-def get_CurrentSettings(**kwargs):
+def get_CurrentSettings(**kwargs: dict) -> cfg.Settings:
+    """Return settings for the current session."""
     lmax = 6
     return cfg.Settings(lmax=lmax, **kwargs)
 
@@ -30,7 +31,27 @@ def main(
     debug: bool = False,
     batch: str = "testing",
     N: int = 100,
+    **kwargs,
 ):
+    """
+    Run the pipeline with lmax = 6.
+
+    Parameters
+    ----------
+    do_simulations : bool
+        Set to False to not run simulations. Default is True. Note that this will also recompute the S estimators, sum them over angular configuration, etc etc.
+    savefig : bool
+        Set to False to not save figures. Default is True.
+    show : bool
+        Set to True to show figures. Default is False.
+    debug : bool
+        Set to True to run in debug mode (note that this will avoid overwriting existing data).
+        Default is False.
+    batch : str
+        This is the name of the folder where the data will be saved. Default is 'testing'.
+    N : int
+        Number of simulations to run. Default is 100.
+    """
     print("\n*************** INITIALIZING SETTING *************")
     CurrentSettings = get_CurrentSettings(
         savefig=savefig, show=show, debug=debug, batch=batch, N=N

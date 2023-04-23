@@ -10,6 +10,65 @@ from matplotlib.colors import ListedColormap
 
 @dataclass()
 class Settings:
+    """
+    Class that contains all the settings of the project. The default values are set
+     in the __post_init__ method, where the directories are also set. The __post_init__
+     method is called after the __init__ method, and it is the place where the
+     attributes that are not set by the user are set. The attributes that are not set
+     in the __post_init__ method should be set by the user.
+
+    Attributes
+    ----------
+    dir : Path
+        Path to the directory where the data is stored.
+    fig_dir : Path
+        Path to the directory where the figures are stored.
+    I_file : Path
+        Path to the file where the intensity map is stored.
+    P_file : Path
+        Path to the file where the polarization map is stored.
+    CLS_file : Path
+        Path to the file where the CMB power spectra are stored.
+    opt_angs_file : Path
+        Path to the file where the optimal angles are stored.
+    lmax : int
+        Maximum multipole to be considered.
+    savefig : bool
+        Whether to save the figures or not.
+    show : bool
+        Whether to show the figures or not.
+    N : int
+        Number of simulated maps to be generated.
+    lmaxes : list
+        List of lmaxes to be considered.
+    nside : int
+        Nside parameter of healpy.
+    smoothing : int
+        Gaussian smoothing to be applied to the maps.
+    prefix : str
+        Prefix for the files.
+    batch : str
+        Name of the folder where the data is stored.
+    load : bool
+        Whether to load the data or not.
+    debug : bool
+        Whether to print the messages or not.
+    cmap : ListedColormap
+        Colormap for the figures.
+    step : int
+        Step for the binning of the optimal angles.
+    start : int
+        Start of the binning of the optimal angles.
+    μ_min : np.ndarray
+        Minimum values of the bins for the optimal angles.
+    μ_max : np.ndarray
+        Maximum values of the bins for the optimal angles.
+    nbins : int
+        Number of bins for the optimal angles.
+    normalize : bool
+        Whether to normalize the histograms or not.
+    """
+
     lmax: int
     savefig: bool
     show: bool
@@ -28,8 +87,19 @@ class Settings:
     μ_max: np.ndarray = field(init=False)
     nbins: int = field(default=50)
     normalize: bool = field(default=True)
+    dir: Path = field(init=False)
+    fig_dir: Path = field(init=False)
+    I_file: Path = field(init=False)
+    P_file: Path = field(init=False)
+    CLS_file: Path = field(init=False)
+    opt_angs_file: Path = field(init=False)
 
     def __post_init__(self) -> None:
+        """
+        Set the directories, the lmaxes, the prefix, the start of the binning of the
+        optimal angles, the minimum and maximum values of the bins for the optimal
+        angles, and the colormap.
+        """
         self.set_directories()
         self.lmaxes = [4, 6, 10]
         self.prefix = f"lmax{self.lmax}_nside{self.nside}_"
@@ -39,6 +109,11 @@ class Settings:
         self.get_colormap()
 
     def set_directories(self) -> None:
+        """
+        Set the directories where the data is stored, the figures are stored, the
+        intensity map is stored, the polarization map is stored, the CMB power
+        spectra are stored, and the optimal angles are stored. Note that it will create missing directories.
+        """
         package_path = Path(__file__).parent
         data_path = package_path.joinpath("data")
         data_path.mkdir(parents=True, exist_ok=True)
@@ -53,13 +128,19 @@ class Settings:
         return
 
     def get_colormap(self) -> None:
+        """
+        Set the colormap for the figures.
+        """
         self.cmap = ListedColormap(
             np.loadtxt(self.dir.joinpath("../../Planck_data/Planck_cmap.txt")) / 255.0
         )
-        self.cmap.set_bad("gray")  # color of missing pixels
+        self.cmap.set_bad("gray")
         self.cmap.set_under("white")
 
     def get_CLs(self) -> dict:
+        """
+        Get the CMB power spectra from the file where they are stored.
+        """
         with open(self.CLS_file, "rb") as pickle_file:
             CLs = pickle.load(pickle_file)
         cons_0 = CLs["gwgw"] - CLs["tgw"] ** 2 / CLs["tt"]
@@ -68,9 +149,11 @@ class Settings:
         return CLs
 
     def get_mask(self) -> np.ndarray:
-        from healpy import read_map
-
+        """
+        Get the mask from the file where it is stored.
+        """
         from functions import downgrade_map
+        from healpy import read_map
 
         mask_file = self.dir.joinpath(
             "../../Planck_data/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
@@ -85,9 +168,11 @@ class Settings:
         return mask
 
     def get_cmb_map(self) -> np.ndarray:
-        from healpy import read_map
-
+        """
+        Get the CMB map from the file where it is stored.
+        """
         from functions import downgrade_map
+        from healpy import read_map
 
         planck_filename = self.dir.joinpath(
             "../../Planck_data/COM_CMB_IQU-smica_2048_R3.00_full.fits"
@@ -96,6 +181,9 @@ class Settings:
         return downgrade_map(planck_map, self.nside, fwhmout=np.deg2rad(self.smoothing))
 
     def get_spectra_files(self):
+        """
+        Get the files where the spectra are stored.
+        """
         return [
             self.dir.joinpath(self.prefix + "TT_uncon_CL.pkl"),  # 0
             self.dir.joinpath(self.prefix + "GWGW_uncon_CL.pkl"),  # 1
@@ -109,6 +197,9 @@ class Settings:
         ]
 
     def get_S_files(self):
+        """
+        Get the files where the S estimators are stored.
+        """
         return [
             self.dir.joinpath(self.prefix + "S_TT.pkl"),  # 0
             self.dir.joinpath(self.prefix + "S_masked_TT.pkl"),  # 1
@@ -136,6 +227,9 @@ class Settings:
         ]
 
     def get_cumu_S_files(self):
+        """
+        Get the files where the cumulative S estimators are stored.
+        """
         return [
             self.dir.joinpath(self.prefix + "cumu_S_TT.pkl"),  # 0
             self.dir.joinpath(self.prefix + "cumu_S_masked_TT.pkl"),  # 1
@@ -165,6 +259,9 @@ class Settings:
         ]
 
     def get_significance_files(self):
+        """
+        Get the files where the significance estimators are stored.
+        """
         return [
             self.dir.joinpath(self.prefix + "signi_TT.pkl"),  # 0
             self.dir.joinpath(self.prefix + "signi_masked_TT.pkl"),  # 1
@@ -194,6 +291,35 @@ class Settings:
 
 @dataclass
 class State:
+    """
+    This class stores the state of the application. It is used to store the
+    settings, the data and the results. It is used to save and load the state
+    of the application. This allows accessing useful information from different parts of the code.
+
+    Attributes
+    ----------
+    settings: Settings
+        The settings of the application.
+    signi_dict: dict
+        The significance of the different fields.
+    opt_angs: dict
+        The optimal angles of the different fields.
+    spectra_files: list[str]
+        The filenames of the different spectra.
+    S_files: list[str]
+        The filenames of the different S estimators.
+    cumu_S_files: list[str]
+        The filenames of the different cumulative S estimators.
+    CLs: dict
+        The different CMB power spectra.
+    cmb_map: np.ndarray
+        The CMB map.
+    mask: np.ndarray
+        The mask of the CMB map.
+    window_file: Path
+        The filename of the window function.
+    """
+
     settings: Settings
     signi_dict: dict = field(init=False)
     opt_angs: dict = field(init=False)
@@ -205,6 +331,10 @@ class State:
     mask: np.ndarray = field(init=False)
 
     def __post_init__(self):
+        """
+        This method is called after the __init__ method. It initializes the
+        attributes of the class.
+        """
         self.signi_dict = {}
         self.save_CLs()
         self.save_cmb_map()
@@ -216,18 +346,30 @@ class State:
         )
 
     def save_cmb_map(self) -> None:
+        """
+        This method saves the cmb map.
+        """
         cmb_map = self.settings.get_cmb_map()
         self.cmb_map = cmb_map
 
     def save_mask(self) -> None:
+        """
+        This method saves the mask.
+        """
         mask = self.settings.get_mask()
         self.mask = mask
 
     def save_CLs(self) -> None:
+        """
+        This method saves the power spectra.
+        """
         CLs = self.settings.get_CLs()
         self.CLs = CLs
 
     def save_widgets(self) -> None:
+        """
+        This method initializes the widgets necessary to plot the progessbars.
+        """
         from progressbar import (
             AdaptiveETA,
             AnimatedMarker,
@@ -250,16 +392,30 @@ class State:
         return
 
     def get_window(self) -> np.ndarray:
+        """
+        This method returns the window function.
+        """
         file = self.window_file
         with open(file, "rb") as pickle_file:
             return pickle.load(pickle_file)
 
     def get_legendre_integrals(self) -> np.ndarray:
+        """
+        This method returns the legendre integrals.
+        """
         file = self.settings.I_file
         with open(file, "rb") as pickle_file:
             return pickle.load(pickle_file)
 
     def collect_spectra(self, files: list[str]) -> dict:
+        """
+        This method collects the different spectra given a list of filenames.
+
+        Parameters
+        ----------
+        files: list[str]
+            The filenames of the different spectra.
+        """
         names = [(file.stem).replace(self.settings.prefix, "") for file in files]
 
         data = {}
@@ -272,6 +428,9 @@ class State:
         return data
 
     def save_SMICA_spectra(self) -> None:
+        """
+        This method saves the spectra of the SMICA CMB map. This is done both for the full-sky case, with anafast, and for the masked case, with the pseudo-Cl algorithm.
+        """
         from healpy import alm2cl, map2alm
         from pymaster import NmtBin, NmtField, NmtWorkspace, compute_full_master
 

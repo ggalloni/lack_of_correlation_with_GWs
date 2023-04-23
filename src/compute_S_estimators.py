@@ -2,6 +2,14 @@ from classes import State
 
 
 def save_single_estimators(CurrentState: State):
+    """
+    Compute and save the estimators for each field.
+
+    Parameters
+    ----------
+    CurrentState : State
+        The current state of the pipeline.
+    """
     from functions import compute_S
 
     integral = CurrentState.get_legendre_integrals()
@@ -62,7 +70,14 @@ def save_single_estimators(CurrentState: State):
     return
 
 
-def save_combined_estimators(out_files):
+def save_combined_estimators(out_files: list) -> None:
+    """Save combined estimators
+
+    Parameters
+    ----------
+        out_files: list
+            List of output files
+    """
     from functions import compute_joint_S, compute_super_S
 
     print("\nUnconstrained TT, GWGW...")
