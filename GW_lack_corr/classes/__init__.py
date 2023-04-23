@@ -1,4 +1,4 @@
-"""
+r"""
 .. include:: README.md
 """
 

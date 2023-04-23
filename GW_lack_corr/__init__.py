@@ -1,4 +1,4 @@
-"""
+r"""
 Welcome to the Lack-of-Correlation with GWs package!
 
 .. include:: ../README.md

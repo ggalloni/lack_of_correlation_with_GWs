@@ -196,7 +196,7 @@ class Settings:
         planck_map = read_map(planck_filename, field=0) * 1e6  # We want muK2
         return downgrade_map(planck_map, self.nside, fwhmout=np.deg2rad(self.smoothing))
 
-    def get_spectra_files(self):
+    def get_spectra_files(self) -> list:
         """
         Get the files where the spectra are stored.
 
@@ -217,7 +217,7 @@ class Settings:
             self.dir.joinpath(self.prefix + "masked_TGW_con_CL.pkl"),  # 8
         ]
 
-    def get_S_files(self):
+    def get_S_files(self) -> list:
         """
         Get the files where the S estimators are stored.
 
@@ -252,7 +252,7 @@ class Settings:
             self.dir.joinpath(self.prefix + "S_masked_con_TT_TGW.pkl"),  # 22
         ]
 
-    def get_cumu_S_files(self):
+    def get_cumu_S_files(self) -> list:
         """
         Get the files where the cumulative S estimators are stored.
 
@@ -289,7 +289,7 @@ class Settings:
             self.dir.joinpath(self.prefix + "cumu_S_masked_con_TT_TGW.pkl"),  # 22
         ]
 
-    def get_significance_files(self):
+    def get_significance_files(self) -> list:
         """
         Get the files where the significance estimators are stored.
 
