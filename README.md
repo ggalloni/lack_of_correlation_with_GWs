@@ -1,4 +1,8 @@
-# lack_of_correlation_with_GWs
+<p align="center">
+  <img src="https://github.com/ggalloni/lack_of_correlation_with_GWs/blob/main/lack_logo2.png" width="500">
+</p>
+
+# Lack-of-Correlation with Gravitational Waves
 
 This repository collects the codes to run the analysis on the lack-of-correlation anomaly using Gravitational Waves (GWs). 
 
