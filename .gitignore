@@ -2,3 +2,4 @@
 *.fits
 
 data/CLS.pkl
+.vscode/settings.json
