@@ -33,7 +33,7 @@ Assuming that you have all the necessary dependencies, data and input spectra, t
 
 ## Testing
 
-As an example, I provide the results of a test pipeline, named "testing", assuming $N=100$. In particular, in the folder `data\testing` you can find every product of the analysis, figures included.
+As an example, I provide the results of a test pipeline, named "testing", assuming $N=100$. In particular, in the folder `data/testing` you can find every product of the analysis, figures included.
 
 ## Important notes
 
