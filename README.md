@@ -8,7 +8,7 @@ This repository collects the codes to run the analysis on the lack-of-correlatio
 
 ## Necessary data
 
-Note that you need to have some of _Planck_ data to successfully run this code. In particular, you need the [common intensity mask](http://pla.esac.esa.int/pla/\#maps) and [SMICA full-sky map](http://pla.esac.esa.int/pla/\#maps). They should be placed in the `Planck_data` folder, together with the _Planck_'s colormap, which I already provide. Alternatively, you should modify the path to find these data in the `classes.py` file.
+Note that you need to have some of _Planck_ data to successfully run this code. In particular, you need the [common intensity mask](http://pla.esac.esa.int/pla/\#maps) and [SMICA full-sky map](http://pla.esac.esa.int/pla/\#maps). They should be placed in the `Planck_data` folder, together with the _Planck_'s colormap, which I already provide. Alternatively, you should modify the path to find these data in the `src/classes/settings.py` file.
 
 ## Dependencies
 
