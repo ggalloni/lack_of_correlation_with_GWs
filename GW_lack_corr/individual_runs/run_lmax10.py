@@ -1,19 +1,20 @@
 from GW_lack_corr.classes.settings import Settings
 from GW_lack_corr.classes.state import State
 from GW_lack_corr.src import (
+    compute_S_estimators,
     compute_legendre_integrals,
     compute_legendre_polynomials,
-    compute_S_estimators,
     compute_window_function,
+    map_variance,
+    plot_S_histograms,
     plot_angular_correlation_function,
     plot_cumulative_S_estimator,
     plot_cumulative_significance,
     plot_optimal_angular_ranges,
-    plot_S_histograms,
     save_cumulative_S_estimators,
+    simulations_production,
     save_optimal_angular_ranges,
     save_significance,
-    simulations_production,
     spectra_production,
 )
 
@@ -64,6 +65,9 @@ def main(
         savefig=savefig, show=show, debug=debug, batch=batch, N=N
     )
 
+    if not CurrentSettings.seed_file.exists():
+        print("\n***************** PRODUCING SEEDS ****************")
+        CurrentSettings.produce_seeds()
     if not CurrentSettings.CLS_file.exists():
         print("\n**************** PRODUCING SPECTRA ***************")
         spectra_production.main(CurrentSettings)
@@ -93,6 +97,8 @@ def main(
         save_significance.main(CurrentState)
 
     if CurrentSettings.show or CurrentSettings.savefig:
+        print("\n********** PLOTTING EXTRA MAP VARIANCES **********")
+        map_variance.main(CurrentState)
         print("\n***** PLOTTING 2-POINT CORRELATION FUNCTIONS *****")
         plot_angular_correlation_function.main(CurrentState)
         print("\n******** PLOTTING S ESTIMATORS HISTOGRAMS ********")

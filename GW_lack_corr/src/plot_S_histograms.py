@@ -3,6 +3,8 @@ from GW_lack_corr.src.common_functions import plot_hist, plot_joint_hist
 from GW_lack_corr.classes.state import State
 import pickle
 
+plt.rcParams.update({"figure.max_open_warning": 0})
+
 
 def plot_histograms(CurrentState: State):
     with open(CurrentState.settings.opt_angs_file, "rb") as pickle_file:
@@ -127,6 +129,7 @@ def plot_histograms(CurrentState: State):
 
 def main(CurrentState: State):
     plot_histograms(CurrentState)
+    plt.close("all")
     return
 
 

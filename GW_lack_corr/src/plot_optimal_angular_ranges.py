@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from GW_lack_corr.src.common_functions import optimal_ang
 from GW_lack_corr.classes.state import State
 
+plt.rcParams.update({"figure.max_open_warning": 0})
+
 
 def plotting(CurrentState: State):
     lmax = CurrentState.settings.lmax
@@ -167,6 +169,7 @@ def plotting(CurrentState: State):
 
 def main(CurrentState: State):
     plotting(CurrentState)
+    plt.close("all")
     return
 
 

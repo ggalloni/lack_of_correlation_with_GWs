@@ -11,8 +11,10 @@ from progressbar import ProgressBar
 from GW_lack_corr.classes.state import State
 from GW_lack_corr.src.common_functions import mask_TT_un, mask_X_con, mask_X_un
 
+np.seterr(divide="ignore", invalid="ignore")
 
-def get_SMICA_seeds(CurrentState: State) -> np.ndarray:
+
+def get_SMICA_alms(CurrentState: State) -> np.ndarray:
     """Get the SMICA seed for the current state.
 
     Parameters
@@ -112,6 +114,10 @@ def plot_sky(
     return
 
 
+def get_random_seeds(CurrentState: State) -> np.ndarray:
+    return CurrentState.settings.get_seeds()
+
+
 def produce_realizations(CurrentState: State) -> None:
     """Produce the realizations.
 
@@ -136,20 +142,33 @@ def produce_realizations(CurrentState: State) -> None:
     lmax: int = CurrentState.settings.lmax
 
     # Get the SMICA seeds
-    SMICA_seed, decoupled_SMICA_seed, fullsky_SMICA_alm, _ = get_SMICA_seeds(
+    SMICA_seed, decoupled_SMICA_seed, fullsky_SMICA_alm, _ = get_SMICA_alms(
         CurrentState
     )
 
+    # Get the seeds
+    seeds = get_random_seeds(CurrentState)
+    free_TT_seeds = seeds["TT_uncon"]
+    free_GWGW_seeds = seeds["GWGW_uncon"]
+    fullsky_constrained_GWGW_seeds = seeds["GWGW_con"]
+    masked_constrained_GWGW_seeds = seeds["masked_GWGW_con"]
+    LCDM_constrained_GWGW_seeds = seeds["LCDM_con_GWGW"]
+
+    # Produce the realizations
     widgets = CurrentState.widgets
     widgets[0] = "Generating realizations: "
     pbar = ProgressBar(widgets=widgets, maxval=N).start()
     start = time.time()
     for i in pbar(i for i in range(N)):
+        np.random.seed(free_TT_seeds[i])
         free_TT_realizations["%s" % i] = hp.synalm(CLs["tt"], lmax=lmax)
+        np.random.seed(free_GWGW_seeds[i])
         free_GWGW_realizations["%s" % i] = hp.synalm(CLs["gwgw"], lmax=lmax)
+        np.random.seed(masked_constrained_GWGW_seeds[i])
         masked_constrained_GWGW_realizations["%s" % i] = (
             hp.synalm(CLs["constrained_gwgw"], lmax=lmax) + decoupled_SMICA_seed
         )
+        np.random.seed(fullsky_constrained_GWGW_seeds[i])
         fullsky_constrained_GWGW_realizations["%s" % i] = (
             hp.synalm(CLs["constrained_gwgw"], lmax=lmax) + SMICA_seed
         )
@@ -158,6 +177,7 @@ def produce_realizations(CurrentState: State) -> None:
             CLs["tgw"][: lmax + 1] / CLs["tt"][: lmax + 1],
         )
         seed[np.isnan(seed)] = 0
+        np.random.seed(LCDM_constrained_GWGW_seeds[i])
         LCDM_constrained_GWGW_realizations["%s" % i] = (
             hp.synalm(CLs["constrained_gwgw"], lmax=lmax) + seed
         )
@@ -240,7 +260,7 @@ def compute_fullsky_angular_spectra(
     """
     N = CurrentState.settings.N
     lmax = CurrentState.settings.lmax
-    _, _, fullsky_SMICA_alm, _ = get_SMICA_seeds(CurrentState)
+    _, _, fullsky_SMICA_alm, _ = get_SMICA_alms(CurrentState)
     GWGW_uncon_CL = []
     TT_uncon_CL = []
     GWGW_con_CL = []
@@ -312,6 +332,10 @@ def compute_masked_angular_spectra(
     """
     N = CurrentState.settings.N
 
+    # Get the seeds
+    seeds = get_random_seeds(CurrentState)
+    free_TGW_seeds = seeds["masked_TGW_uncon"]
+
     cmb_map_id = ray.put(CurrentState.cmb_map)
     cmb_real_id = ray.put(free_TT_realizations)
     cgwb_masked_con_real_id = ray.put(masked_constrained_GWGW_realizations)
@@ -321,10 +345,18 @@ def compute_masked_angular_spectra(
     inv_window_id = ray.put(np.linalg.inv(CurrentState.get_window()))
     CLs_id = ray.put(CurrentState.CLs)
     N_id = ray.put(N)
+    seeds_free_TGW_id = ray.put(free_TGW_seeds)
 
     start = time.time()
     masked_TGW_uncon_CL = mask_X_un.remote(
-        N_id, cmb_real_id, mask_id, lmax_id, nside_id, inv_window_id, CLs_id
+        N_id,
+        cmb_real_id,
+        mask_id,
+        lmax_id,
+        nside_id,
+        inv_window_id,
+        CLs_id,
+        seeds_free_TGW_id,
     )
     masked_TGW_uncon_CL = ray.get(masked_TGW_uncon_CL)
     end = time.time()

@@ -4,6 +4,8 @@ import scipy.special as ss
 from GW_lack_corr.classes.state import State
 from tqdm import tqdm
 
+plt.rcParams.update({"figure.max_open_warning": 0})
+
 
 def compute_legendre_polynomials():
     lmax = 2000
@@ -123,6 +125,9 @@ def main(CurrentState: State):
         plt.savefig(fig_dir.joinpath(f"ang_corr_TGW_lmax{lmax}.png"), dpi=150)
     if show:
         plt.show()
+
+    plt.close("all")
+    return
 
 
 if __name__ == "__main__":

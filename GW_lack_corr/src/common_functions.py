@@ -20,6 +20,10 @@ from scipy.stats import norm
 from scipy.special import sph_harm as Ylm
 from scipy.integrate import nquad
 
+import warnings
+from astropy.utils.exceptions import AstropyWarning
+
+warnings.simplefilter("ignore", category=AstropyWarning)
 np.seterr(divide="ignore", invalid="ignore")
 
 
@@ -313,6 +317,7 @@ def mask_X_un(
     nside: int,
     inv_window: np.ndarray,
     CLs: dict,
+    seeds: list,
 ) -> list:
     """Calculate the TGW power spectrum of the realisations of the CGWB using a given mask.
 
@@ -332,6 +337,8 @@ def mask_X_un(
         The inverse of the window function.
     CLs : dict
         The power spectra of the map.
+    seeds : list
+        The seeds used to generate the realisations of the CGWB.
 
     Returns
     -------
@@ -339,9 +346,6 @@ def mask_X_un(
         The TGW power spectrum of the realisations of the CGWB.
     """
     res = []
-    constrained_GWGW_spectrum = CLs["gwgw"] - CLs["tgw"] ** 2 / CLs["tt"]
-    constrained_GWGW_spectrum[np.isnan(constrained_GWGW_spectrum)] = 0.0
-    constrained_GWGW_spectrum[np.isinf(constrained_GWGW_spectrum)] = 0.0
     filt = np.ones(lmax + 1)
     for i in range(N):
         f_T = nmt.NmtField(mask, [hp.alm2map(cmb_real["%s" % i], nside)], spin=0)
@@ -351,7 +355,8 @@ def mask_X_un(
         decoupled_alm = masked_alm @ inv_window
         seed = hp.almxfl(decoupled_alm, CLs["tgw"][: lmax + 1] / CLs["tt"][: lmax + 1])
         seed[np.isnan(seed)] = 0
-        cgwb_real = hp.synalm(constrained_GWGW_spectrum, lmax=lmax) + seed
+        np.random.seed(seeds[i])
+        cgwb_real = hp.synalm(CLs["constrained_gwgw"], lmax=lmax) + seed
         f_GW = nmt.NmtField(np.ones(mask.shape), [hp.alm2map(cgwb_real, nside)], spin=0)
         if i == 0:
             b = nmt.NmtBin.from_nside_linear(nside, 1)

@@ -121,6 +121,7 @@ class Settings:
         self.dir.mkdir(parents=True, exist_ok=True)
         self.fig_dir = self.dir.joinpath("figures")
         self.fig_dir.mkdir(parents=True, exist_ok=True)
+        self.seed_file = self.dir.joinpath("seeds_TT_uncon.pkl")
         self.I_file = self.dir.joinpath(f"lmax{self.lmax}_I.pkl")
         self.P_file = self.dir.joinpath(f"lmax{self.lmax}_P.pkl")
         self.CLS_file = self.dir.joinpath("../CLS.pkl")
@@ -195,6 +196,44 @@ class Settings:
         )
         planck_map = read_map(planck_filename, field=0) * 1e6  # We want muK2
         return downgrade_map(planck_map, self.nside, fwhmout=np.deg2rad(self.smoothing))
+
+    def produce_seeds(self) -> None:
+        """
+        Produce the seeds for the simulations.
+        """
+        spectra_file = self.get_spectra_files()
+        probes = [spectrum.stem for spectrum in spectra_file]
+
+        for probe in probes:
+            probe = probe[:-3].replace(self.prefix, "")
+            seeds = np.random.randint(0, 2**32 - 1, size=self.N)
+            with open(self.dir.joinpath(f"seeds_{probe}.pkl"), "wb") as pickle_file:
+                pickle.dump(seeds, pickle_file)
+
+        seeds = np.random.randint(0, 2**32 - 1, size=self.N)
+        with open(self.dir.joinpath(f"seeds_LCDM_con_GWGW.pkl"), "wb") as pickle_file:
+            pickle.dump(seeds, pickle_file)
+        return
+
+    def get_seeds(self) -> np.ndarray:
+        """Collect the random seeds for the simulations.
+
+        Returns
+        -------
+        seeds : np.ndarray
+            Random seeds for the simulations.
+        """
+        spectra_file = self.get_spectra_files()
+        probes = [spectrum.stem for spectrum in spectra_file]
+        seeds = {}
+        for probe in probes:
+            probe = probe[:-3].replace(self.prefix, "")
+            with open(self.dir.joinpath(f"seeds_{probe}.pkl"), "rb") as pickle_file:
+                seeds[probe] = pickle.load(pickle_file)
+
+        with open(self.dir.joinpath(f"seeds_LCDM_con_GWGW.pkl"), "rb") as pickle_file:
+            seeds["LCDM_con_GWGW"] = pickle.load(pickle_file)
+        return seeds
 
     def get_spectra_files(self) -> list:
         """

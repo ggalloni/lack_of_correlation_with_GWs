@@ -1,5 +1,5 @@
-from GW_lack_corr.src import make_tables
 from GW_lack_corr.individual_runs import run_lmax4, run_lmax6, run_lmax10
+from GW_lack_corr.src import make_tables
 
 
 def main():
@@ -9,6 +9,9 @@ def main():
 
     Parameters
     ----------
+    produce_new_seeds : bool
+        Set to True to produce new seeds. Default is False. This will overwrite existing seeds and affect only the stochastic production of simulations. The rest of the analysis is deterministic. In the current implementation, seeds are shared by the three lmax runs.
+
     run_everything : bool
         Set to False to only make tables. Default is True.
 
@@ -31,9 +34,10 @@ def main():
     do_simulations : bool
         Set to False to not run simulations. Default is True. Note that this will also recompute the S estimators, sum them over angular configuration, etc etc.
     """
+    produce_new_seeds = False
     run_everything = True
     savefig = True
-    show = False
+    show = False  # Careful in setting this to True, as it will open a lot of figures.
     debug = False
     batch = "testing"
     N = 100
@@ -43,6 +47,7 @@ def main():
 
         print("\n***************** RUNNING LMAX = 4 PIPELINE *****************")
         run_lmax4.main(
+            produce_new_seeds=produce_new_seeds,
             do_simulations=do_simulations,
             savefig=savefig,
             show=show,
@@ -52,6 +57,7 @@ def main():
         )
         print("\n***************** RUNNING LMAX = 6 PIPELINE *****************")
         run_lmax6.main(
+            produce_new_seeds=produce_new_seeds,
             do_simulations=do_simulations,
             savefig=savefig,
             show=show,
@@ -61,6 +67,7 @@ def main():
         )
         print("\n***************** RUNNING LMAX = 10 PIPELINE ****************")
         run_lmax10.main(
+            produce_new_seeds=produce_new_seeds,
             do_simulations=do_simulations,
             savefig=savefig,
             show=show,

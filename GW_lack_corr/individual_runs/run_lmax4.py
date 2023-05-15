@@ -5,6 +5,7 @@ from GW_lack_corr.src import (
     compute_legendre_integrals,
     compute_legendre_polynomials,
     compute_window_function,
+    map_variance,
     plot_S_histograms,
     plot_angular_correlation_function,
     plot_cumulative_S_estimator,
@@ -32,6 +33,7 @@ def get_CurrentSettings(**kwargs: dict) -> Settings:
 
 def main(
     *,
+    produce_new_seeds: bool = False,
     do_simulations: bool = True,
     savefig: bool = False,
     show: bool = False,
@@ -45,6 +47,8 @@ def main(
 
     Parameters
     ----------
+    produce_new_seeds : bool
+        Set to True to produce new seeds. Default is False. This will overwrite existing seeds and affect only the stochastic production of simulations. The rest of the analysis is deterministic. In the current implementation, seeds are shared by the three lmax runs.
     do_simulations : bool
         Set to False to not run simulations. Default is True. Note that this will also recompute the S estimators, sum them over angular configuration, etc etc.
     savefig : bool
@@ -64,6 +68,9 @@ def main(
         savefig=savefig, show=show, debug=debug, batch=batch, N=N
     )
 
+    if produce_new_seeds:
+        print("\n***************** PRODUCING SEEDS ****************")
+        CurrentSettings.produce_seeds()
     if not CurrentSettings.CLS_file.exists():
         print("\n**************** PRODUCING SPECTRA ***************")
         spectra_production.main(CurrentSettings)
@@ -93,6 +100,8 @@ def main(
         save_significance.main(CurrentState)
 
     if CurrentSettings.show or CurrentSettings.savefig:
+        print("\n********** PLOTTING EXTRA MAP VARIANCES **********")
+        map_variance.main(CurrentState)
         print("\n***** PLOTTING 2-POINT CORRELATION FUNCTIONS *****")
         plot_angular_correlation_function.main(CurrentState)
         print("\n******** PLOTTING S ESTIMATORS HISTOGRAMS ********")
