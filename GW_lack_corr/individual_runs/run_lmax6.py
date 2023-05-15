@@ -33,6 +33,7 @@ def get_CurrentSettings(**kwargs: dict) -> Settings:
 
 def main(
     *,
+    custom_dir: str = "",
     do_simulations: bool = True,
     savefig: bool = False,
     show: bool = False,
@@ -62,7 +63,7 @@ def main(
     """
     print("\n*************** INITIALIZING SETTING *************")
     CurrentSettings = get_CurrentSettings(
-        savefig=savefig, show=show, debug=debug, batch=batch, N=N
+        custom_dir=custom_dir, savefig=savefig, show=show, debug=debug, batch=batch, N=N
     )
 
     if not CurrentSettings.seed_file.exists():

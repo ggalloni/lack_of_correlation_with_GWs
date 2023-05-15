@@ -9,6 +9,9 @@ def main():
 
     Parameters
     ----------
+    custom_data_folder : str
+        This is the name of the folder where the data will be saved. If this is left to the default "", then the data will be saved in the folder GW_lack_corr/data.
+
     produce_new_seeds : bool
         Set to True to produce new seeds. Default is False. This will overwrite existing seeds and affect only the stochastic production of simulations. The rest of the analysis is deterministic. In the current implementation, seeds are shared by the three lmax runs.
 
@@ -34,6 +37,7 @@ def main():
     do_simulations : bool
         Set to False to not run simulations. Default is True. Note that this will also recompute the S estimators, sum them over angular configuration, etc etc.
     """
+    custom_data_folder = "/home/jack/Documents/scripts/Anomalies Ferrara/data/"
     produce_new_seeds = False
     run_everything = True
     savefig = True
@@ -47,6 +51,7 @@ def main():
 
         print("\n***************** RUNNING LMAX = 4 PIPELINE *****************")
         run_lmax4.main(
+            custom_dir=custom_data_folder,
             produce_new_seeds=produce_new_seeds,
             do_simulations=do_simulations,
             savefig=savefig,
@@ -57,6 +62,7 @@ def main():
         )
         print("\n***************** RUNNING LMAX = 6 PIPELINE *****************")
         run_lmax6.main(
+            custom_dir=custom_data_folder,
             produce_new_seeds=produce_new_seeds,
             do_simulations=do_simulations,
             savefig=savefig,
@@ -67,6 +73,7 @@ def main():
         )
         print("\n***************** RUNNING LMAX = 10 PIPELINE ****************")
         run_lmax10.main(
+            custom_dir=custom_data_folder,
             produce_new_seeds=produce_new_seeds,
             do_simulations=do_simulations,
             savefig=savefig,
@@ -78,6 +85,7 @@ def main():
 
     print("\n******************* MAKING RESULTS TABLES *******************")
     CurrentSettings = run_lmax4.get_CurrentSettings(
+        custom_dir=custom_data_folder,
         savefig=savefig,
         show=show,
         debug=debug,

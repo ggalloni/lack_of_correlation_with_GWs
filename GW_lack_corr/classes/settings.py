@@ -19,8 +19,10 @@ class Settings:
 
     Attributes
     ----------
+    custom_dir : str
+        Optional custom directory where you want the data stored.
     dir : Path
-        Path to the directory where the data is stored.
+        Path to the directory where the data is stored. If custom_dir is not set, it is set to the path of the package.
     fig_dir : Path
         Path to the directory where the figures are stored.
     I_file : Path
@@ -73,6 +75,7 @@ class Settings:
     savefig: bool
     show: bool
     N: int
+    custom_dir: str = field(default="")
     lmaxes: list = field(init=False)
     nside: int = field(default=64)
     smoothing: int = field(default=2)
@@ -115,7 +118,10 @@ class Settings:
         spectra are stored, and the optimal angles are stored. Note that it will create missing directories.
         """
         package_path = Path(__file__).parent
-        data_path = package_path.joinpath("../../data")
+        if self.custom_dir:
+            data_path = Path(self.custom_dir)
+        else:
+            data_path = package_path.joinpath("../../data")
         data_path.mkdir(parents=True, exist_ok=True)
         self.dir = data_path.joinpath(self.batch)
         self.dir.mkdir(parents=True, exist_ok=True)
