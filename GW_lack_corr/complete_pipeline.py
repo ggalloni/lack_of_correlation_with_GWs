@@ -37,12 +37,13 @@ def main():
     do_simulations : bool
         Set to False to not run simulations. Default is True. Note that this will also recompute the S estimators, sum them over angular configuration, etc etc.
     """
-    custom_data_folder = "/home/jack/Documents/scripts/Anomalies Ferrara/data/"
-    produce_new_seeds = False
+    custom_data_folder = ""
+    produce_new_seeds = True
     run_everything = True
     savefig = True
     show = False  # Careful in setting this to True, as it will open a lot of figures.
     debug = False
+    smoothing = 2
     batch = "testing"
     N = 100
 
@@ -59,6 +60,7 @@ def main():
             debug=debug,
             batch=batch,
             N=N,
+            smoothing=smoothing,
         )
         print("\n***************** RUNNING LMAX = 6 PIPELINE *****************")
         run_lmax6.main(
@@ -70,6 +72,7 @@ def main():
             debug=debug,
             batch=batch,
             N=N,
+            smoothing=smoothing,
         )
         print("\n***************** RUNNING LMAX = 10 PIPELINE ****************")
         run_lmax10.main(
@@ -81,6 +84,7 @@ def main():
             debug=debug,
             batch=batch,
             N=N,
+            smoothing=smoothing,
         )
 
     print("\n******************* MAKING RESULTS TABLES *******************")

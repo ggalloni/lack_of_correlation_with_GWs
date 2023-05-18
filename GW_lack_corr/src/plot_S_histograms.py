@@ -59,13 +59,20 @@ def plot_histograms(CurrentState: State):
 
     print("\nPlotting S for the TT, GWGW...")
     plot_joint_hist(
-        opt_angs, "TGW", "TT,GWGW", lmax, files[7], files[8], fig_dir, savefig=savefig
+        opt_angs,
+        "TT_GWGW",
+        "TT,GWGW",
+        lmax,
+        files[7],
+        files[8],
+        fig_dir,
+        savefig=savefig,
     )
 
     print("\nPlotting S for the masked TT, GWGW...")
     plot_joint_hist(
         opt_angs,
-        "masked_TGW",
+        "masked_TT_GWGW",
         "TT,GWGW",
         lmax,
         files[9],
