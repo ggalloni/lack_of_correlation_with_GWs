@@ -1,4 +1,3 @@
-import pickle
 import time
 
 import healpy as hp
@@ -43,7 +42,7 @@ def produce_realizations(CurrentState: State) -> None:
     pbar = ProgressBar(widgets=widgets, maxval=N).start()
     start = time.time()
     for i in pbar(i for i in range(N)):
-        np.random.seed(free_TT_seeds[i])
+        np.random.seed(free_TT_seeds[i])  # noqa: NPY002
         free_TT_maps.append(hp.synfast(CLs["tt"], nside=nside, lmax=lmax))
     end = time.time()
     pbar.finish()
