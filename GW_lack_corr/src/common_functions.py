@@ -1281,7 +1281,7 @@ def plot_cumulative_S(
         lw=2,
         color="red",
         density=True,
-        label="Uncontr.",
+        label="Unconstr.",
     )
     lower_uncon = np.percentile(np.log10(uncon), 0.5)
     upper_uncon = np.percentile(np.log10(uncon), 99.5)
@@ -1293,7 +1293,7 @@ def plot_cumulative_S(
     #     lw=2,
     #     color="pink",
     #     density=True,
-    #     label="Masked uncontr.",
+    #     label="Masked unconstr.",
     # )
 
     if field == "TT":
@@ -1317,7 +1317,7 @@ def plot_cumulative_S(
             lw=2,
             color="dodgerblue",
             density=True,
-            label="Contr.",
+            label="Constr.",
         )
         ax2.hist(
             np.log10(masked_con),
@@ -1326,7 +1326,7 @@ def plot_cumulative_S(
             lw=2,
             color="forestgreen",
             density=True,
-            label="Masked contr.",
+            label="Masked constr.",
         )
         lower_con = np.percentile(np.log10(masked_con), 0.5)
         upper_con = np.percentile(np.log10(masked_con), 99.5)
@@ -1527,7 +1527,7 @@ def plot_signi(
             lw=2,
             color="dodgerblue",
             density=True,
-            label="Contr.",
+            label="Constr.",
         )
         ax.hist(
             (masked_con),
@@ -1536,7 +1536,7 @@ def plot_signi(
             lw=2,
             color="forestgreen",
             density=True,
-            label="Masked contr.",
+            label="Masked constr.",
         )
 
         ax.set_ylim(0, np.max([hist1, hist2]) + np.max([hist1, hist2]) * 0.5)
@@ -2478,7 +2478,7 @@ def save_sigmas(outfile: str, uncon: np.ndarray, con: np.ndarray) -> None:
 #     #     lw=2,
 #     #     color="red",
 #     #     density=True,
-#     #     label="Uncontr.",
+#     #     label="Unconstr.",
 #     # )
 
 #     if field == "TT":
@@ -2502,7 +2502,7 @@ def save_sigmas(outfile: str, uncon: np.ndarray, con: np.ndarray) -> None:
 #             lw=2,
 #             color="dodgerblue",
 #             density=True,
-#             label="Contr.",
+#             label="Constr.",
 #         )
 #         ax2.hist(
 #             np.log10(masked_con),
@@ -2511,7 +2511,7 @@ def save_sigmas(outfile: str, uncon: np.ndarray, con: np.ndarray) -> None:
 #             lw=2,
 #             color="forestgreen",
 #             density=True,
-#             label="Masked contr.",
+#             label="Masked constr.",
 #         )
 #         ax2.axvline(np.log10(smica), lw=1.5, c="k", label="SMICA", ls=":")
 #         ax2.axvline(
