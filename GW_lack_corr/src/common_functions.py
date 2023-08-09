@@ -944,6 +944,22 @@ def optimal_ang(
         % (μ_min[idx_min], μ_max[idx_max]),
     )
 
+    unphysical = np.zeros((len(μ_min), len(μ_max)))
+    # Mask the pixels above the anti-diagonal
+    for i in range(len(μ_min)):
+        for j in range(i + 1, len(μ_max)):
+            unphysical[i, j] = np.nan
+    shaded_data = np.ma.masked_where(np.isnan(unphysical), unphysical)
+    cmap_shaded = plt.get_cmap("gray")  # Choose your desired colormap for shading
+    plt.pcolormesh(
+        μ_min,
+        μ_max,
+        shaded_data,
+        cmap=cmap_shaded,
+        alpha=0.2,
+        zorder=500,
+    )  # Adjust alpha for shading intensity
+
     plt.pcolormesh(
         μ_min,
         μ_max,
@@ -1338,7 +1354,7 @@ def plot_cumulative_S(
 
         lower_axis = xlim[0]
         upper_axis = xlim[1]
-        alpha = 0.1
+        alpha = 0.2
 
         if concl:
             ax2.fill_between(
@@ -1348,6 +1364,14 @@ def plot_cumulative_S(
                 color="forestgreen",
                 alpha=alpha,
             )
+
+            # ax2.fill_between(
+            #     x=np.linspace(lower_uncon, upper_con, num=100),
+            #     y1=0,
+            #     y2=10000 + 400,
+            #     color="goldenrod",
+            #     alpha=alpha,
+            # )
 
             ax2.fill_between(
                 x=np.linspace(lower_uncon, upper_uncon, num=100),
@@ -1362,7 +1386,7 @@ def plot_cumulative_S(
                 y1=0,
                 y2=10000 + 400,
                 color="black",
-                alpha=alpha,
+                alpha=alpha / 2,
             )
 
             ax2.fill_between(
@@ -1370,7 +1394,7 @@ def plot_cumulative_S(
                 y1=0,
                 y2=10000 + 400,
                 color="black",
-                alpha=alpha,
+                alpha=alpha / 2,
             )
 
     ax.tick_params(
@@ -1704,7 +1728,7 @@ def plot_hist(
 
     lower_axis = xlim[0]
     upper_axis = xlim[1]
-    alpha = 0.1
+    alpha = 0.2
 
     if concl:
         ax2.fill_between(
@@ -1899,7 +1923,7 @@ def plot_joint_hist(
 
     lower_axis = xlim[0]
     upper_axis = xlim[1]
-    alpha = 0.1
+    alpha = 0.2
 
     if concl:
         ax2.fill_between(
@@ -1909,6 +1933,14 @@ def plot_joint_hist(
             color=color,
             alpha=alpha,
         )
+
+        # ax2.fill_between(
+        #     x=np.linspace(lower_uncon, upper_con, num=100),
+        #     y1=0,
+        #     y2=np.max([hist1, hist2]) + 400,
+        #     color="goldenrod",
+        #     alpha=alpha,
+        # )
 
         ax2.fill_between(
             x=np.linspace(lower_uncon, upper_uncon, num=100),
@@ -1923,7 +1955,7 @@ def plot_joint_hist(
             y1=0,
             y2=np.max([hist1, hist2]) + 400,
             color="black",
-            alpha=alpha,
+            alpha=alpha / 2,
         )
 
         ax2.fill_between(
@@ -1931,7 +1963,7 @@ def plot_joint_hist(
             y1=0,
             y2=np.max([hist1, hist2]) + 400,
             color="black",
-            alpha=alpha,
+            alpha=alpha / 2,
         )
 
     ax.tick_params(
