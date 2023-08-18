@@ -355,7 +355,7 @@ def mask_X_un(
         decoupled_alm = masked_alm @ inv_window
         seed = hp.almxfl(decoupled_alm, CLs["tgw"][: lmax + 1] / CLs["tt"][: lmax + 1])
         seed[np.isnan(seed)] = 0
-        np.random.seed(seeds[i])
+        np.random.seed(seeds[i])  # noqa: NPY002
         cgwb_real = hp.synalm(CLs["constrained_gwgw"], lmax=lmax) + seed
         f_GW = nmt.NmtField(np.ones(mask.shape), [hp.alm2map(cgwb_real, nside)], spin=0)
         if i == 0:
@@ -843,7 +843,7 @@ def save_optimal(
     return [μ_min[idx_min], μ_max[idx_max], np.max(counts)]
 
 
-def optimal_ang(
+def optimal_ang(  # noqa: C901
     uncon_file: str,
     con_file: str,
     lmax: int,
@@ -1600,7 +1600,7 @@ def plot_signi(
     return
 
 
-def plot_hist(
+def plot_hist( # noqa: C901
     opt_angs: dict,
     field: str,
     lab: str,

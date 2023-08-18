@@ -11,6 +11,7 @@ from GW_lack_corr.src import (
     plot_cumulative_S_estimator,
     plot_cumulative_significance,
     plot_optimal_angular_ranges,
+    plot_whatever,
     save_cumulative_S_estimators,
     simulations_production,
     save_optimal_angular_ranges,
@@ -104,6 +105,8 @@ def main(
         plot_angular_correlation_function.main(CurrentState)
         print("\n******** PLOTTING S ESTIMATORS HISTOGRAMS ********")
         plot_S_histograms.main(CurrentState)
+        # print("\n******** PLOTTING S ESTIMATORS HISTOGRAMS ********")
+        # plot_whatever.main(CurrentState)
         print("\n********* PLOTTING OPTIMAL ANGULAR RANGES ********")
         plot_optimal_angular_ranges.main(CurrentState)
         print("\n******** PLOTTING CUMULATIVE S ESTIMATORS ********")
